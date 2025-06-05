@@ -67,7 +67,7 @@
                 Manage WhatsApp, Email, Live Chat, and Social Media conversations with intelligent automation and real-time insights.
             </p>
             
-            <!-- Download Buttons -->
+            <!-- Download Buttons
             <div class="flex flex-col sm:flex-row gap-4">
                 <a href="#" class="glass-effect hover-lift px-6 py-3 rounded-xl inline-flex items-center justify-center group transition-all duration-300">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="mr-3">
@@ -91,7 +91,7 @@
                         <div class="font-semibold">App Store</div>
                     </div>
                 </a>
-            </div>
+            </div> -->
         </div>
         
         <!-- Phone Mockup Section -->
