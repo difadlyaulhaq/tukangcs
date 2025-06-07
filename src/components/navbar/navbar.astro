@@ -61,7 +61,6 @@ const navLinks = [
       </div>
       <div class="brand-content">
         <span class="brand-text">TUKANGCS</span>
-        <!-- <span class="brand-tagline">Code & Craft</span> -->
       </div>
     </div>
 
@@ -88,34 +87,34 @@ const navLinks = [
     <!-- Enhanced Mobile Menu Button -->
     <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
       <div class="hamburger-container">
-        <span class="hamburger-line line-1" id="hamburger"></span>
+        <span class="hamburger-line line-1"></span>
         <span class="hamburger-line line-2"></span>
         <span class="hamburger-line line-3"></span>
       </div>
     </button>
   </div>
+</nav>
 
-  <!-- Enhanced Mobile Navigation -->
-  <div class="mobile-nav" id="mobile-nav">
-    <div class="mobile-bg-blur"></div>
-    <div class="mobile-content">
-      <div class="mobile-links">
-        {navLinks.map((link, index) => (
-          <a href={link.href} class="mobile-link" style={`--mobile-delay: ${index * 0.1}s`}>
-            <span class="mobile-link-text">{link.label}</span>
-            <div class="mobile-link-arrow">→</div>
-          </a>
-        ))}
-        <button class="mobile-cta">
-          <span>Get Started</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </button>
-      </div>
+<!-- Enhanced Mobile Navigation - Moved outside navbar -->
+<div class="mobile-nav" id="mobile-nav">
+  <div class="mobile-bg-blur"></div>
+  <div class="mobile-content">
+    <div class="mobile-links">
+      {navLinks.map((link, index) => (
+        <a href={link.href} class="mobile-link" style={`--mobile-delay: ${index * 0.1}s`}>
+          <span class="mobile-link-text">{link.label}</span>
+          <div class="mobile-link-arrow">→</div>
+        </a>
+      ))}
+      <button class="mobile-cta">
+        <span>Get Started</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
     </div>
   </div>
-</nav>
+</div>
 
 <style>
   .navbar {
@@ -246,14 +245,6 @@ const navLinks = [
     background-clip: text;
     letter-spacing: -0.02em;
     line-height: 1;
-  }
-
-  .brand-tagline {
-    font-size: 0.75rem;
-    color: rgba(148, 163, 184, 0.8);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
   }
   
   .desktop-nav {
@@ -392,9 +383,10 @@ const navLinks = [
     border-radius: 12px;
     cursor: pointer;
     padding: 0.75rem;
-    z-index: 1001;
     transition: all 0.3s ease;
     backdrop-filter: blur(8px);
+    position: relative;
+    z-index: 1002;
   }
 
   .hamburger-container {
@@ -437,18 +429,26 @@ const navLinks = [
     transform: scale(1.05);
   }
   
-  /* Enhanced Mobile Navigation */
+  /* Enhanced Mobile Navigation - Fixed positioning */
   .mobile-nav {
-    display: none;
     position: fixed;
-    top: 80px;
+    top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 1001;
     transform: translateY(-100%);
     opacity: 0;
+    visibility: hidden;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 999;
+    pointer-events: none;
+  }
+
+  .mobile-nav.open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .mobile-bg-blur {
@@ -457,23 +457,19 @@ const navLinks = [
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(15, 23, 42, 0.98);
     backdrop-filter: blur(20px);
   }
 
   .mobile-content {
     position: relative;
     z-index: 2;
-    height: 100%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 2rem;
-  }
-  
-  .mobile-nav.open {
-    transform: translateY(0);
-    opacity: 1;
+    padding-top: 100px; /* Account for navbar height */
   }
   
   .mobile-links {
@@ -500,8 +496,11 @@ const navLinks = [
     justify-content: space-between;
     transform: translateX(-50px);
     opacity: 0;
+  }
+
+  .mobile-nav.open .mobile-link {
     animation: slideInLeft 0.6s ease forwards;
-    animation-delay: var(--mobile-delay);
+    animation-delay: calc(var(--mobile-delay) + 0.2s);
   }
 
   @keyframes slideInLeft {
@@ -545,6 +544,20 @@ const navLinks = [
     gap: 0.75rem;
     transition: all 0.3s ease;
     box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  .mobile-nav.open .mobile-cta {
+    animation: slideInUp 0.6s ease forwards;
+    animation-delay: 0.8s;
+  }
+
+  @keyframes slideInUp {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   .mobile-cta svg {
@@ -556,6 +569,7 @@ const navLinks = [
   .mobile-cta:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 48px rgba(99, 102, 241, 0.4);
+    /* opacity: 0.1; */
   }
 
   .mobile-cta:hover svg {
@@ -572,10 +586,6 @@ const navLinks = [
       display: block;
     }
     
-    .mobile-nav {
-      display: block;
-    }
-    
     .nav-container {
       padding: 0 1.5rem;
       height: 70px;
@@ -588,10 +598,6 @@ const navLinks = [
     
     .brand-text {
       font-size: 1.5rem;
-    }
-
-    .brand-tagline {
-      font-size: 0.7rem;
     }
   }
   
@@ -617,6 +623,11 @@ const navLinks = [
     .mobile-cta {
       font-size: 1.1rem;
       padding: 1.25rem 1.5rem;
+    }
+
+    .mobile-content {
+      padding: 1.5rem;
+      padding-top: 80px;
     }
   }
 </style>
@@ -693,11 +704,17 @@ const navLinks = [
       link.addEventListener('click', closeMobileMenu);
     });
 
-    // Close menu when clicking outside
+    // Close menu when clicking on mobile CTA
+    const mobileCta = document.querySelector('.mobile-cta');
+    if (mobileCta) {
+      mobileCta.addEventListener('click', closeMobileMenu);
+    }
+
+    // Close menu when clicking on background
     const mobileNav = document.getElementById('mobile-nav');
     if (mobileNav) {
       mobileNav.addEventListener('click', (e) => {
-        if (e.target === mobileNav) {
+        if (e.target && (e.target === mobileNav || (e.target as HTMLElement).classList.contains('mobile-bg-blur'))) {
           closeMobileMenu();
         }
       });
