@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TukangCS - AI Customer Service Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes bounce-gentle {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-10px) scale(1.05); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Reveal animations */
+        .reveal-element, .reveal-left, .reveal-right {
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .reveal-left.visible {
+            animation: slideInLeft 0.8s ease forwards;
+        }
+
+        .reveal-right.visible {
+            animation: slideInRight 0.8s ease forwards;
+        }
+
+        .reveal-element.visible {
+            animation: slideInUp 0.8s ease forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.2s; }
+        .stagger-2 { animation-delay: 0.4s; }
+
+        /* Floating animation */
+        .floating {
+            animation: floating 4s ease-in-out infinite;
+        }
+
+        .bounce-gentle {
+            animation: bounce-gentle 3s ease-in-out infinite;
+        }
+
+        /* Glass effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* White frame box */
+        .white-frame {
+            background: white;
+            border: 8px solid white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            position: relative;
+        }
+
+        .white-frame::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            z-index: -1;
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            padding: 16px 32px;
+            border: 2px solid #667eea;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Social media icons */
+        .social-icon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .whatsapp { background: linear-gradient(135deg, #25D366, #128C7E); }
+        .messenger { background: linear-gradient(135deg, #00B2FF, #006AFF); }
+        .telegram { background: linear-gradient(135deg, #0088cc, #0066aa); }
+
+        /* Character illustrations */
+        .character-sitting {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 120px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .character-working {
+            width: 880px;
+            height: 680px;
+            display: inline; 
+            /* align-items: center; */
+            /* justify-content: center; */
+            /* font-size: 100px; */
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Desk */
+        .desk {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 320px;
+            height: 80px;
+            background: linear-gradient(135deg, #D4AF37, #B8860B);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .laptop {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 40px;
+            background: #2c3e50;
+            border-radius: 5px;
+        }
+
+        .laptop::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: 0;
+            width: 60px;
+            height: 25px;
+            background: #34495e;
+            border-radius: 5px 5px 0 0;
+        }
+
+        /* Background decorations */
+        .bg-decoration {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .character-sitting, .character-working {
+                width: 200px;
+                height: 200px;
+                font-size: 80px;
+            }
+            
+            .white-frame {
+                padding: 20px;
+                margin: 0 20px;
+            }
+            
+            .desk {
+                width: 240px;
+                height: 60px;
+            }
+        }
+        .character-sitting img,
+        .character-working img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            /* border-radius: 50%; */
+        }
+        
+        .text-svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* CSS sebelumnya tetap dipertahankan */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- First Section - AI Powered Customer Service -->
+    <section class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-indigo-900 py-20 px-6 relative overflow-hidden">
+        <!-- Background decorations -->
+        <div class="bg-decoration" style="top: 10%; left: 10%; width: 80px; height: 80px; background: white;"></div>
+        <div class="bg-decoration" style="top: 70%; right: 15%; width: 60px; height: 60px; background: white; animation-delay: -2s;"></div>
+        <div class="bg-decoration" style="top: 40%; left: 20%; width: 40px; height: 40px; background: white; animation-delay: -4s;"></div>
+        
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left side - Text SVG -->
+                <div class="reveal-left">
+                    <!-- Gunakan gambar Text.svg -->
+                    <img src="./static/Text.svg" alt="AI-Powered Customer Service Chatbot" class="text-svg">
+                </div>
+                
+                <!-- Right side - Character with social media icons -->
+                <div class="reveal-right relative flex justify-center">
+                    
+                        <!-- Main character dengan gambar main-icon.svg -->
+                        <div class="character-sitting floating">
+                            <img src="./static/main-icon.svg" alt="Customer Service">
+                        </div>
+                </div>
+            </div>
+        </div>
+        <!-- Background decorations -->
+        <div class="bg-decoration" style="top: 15%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+        <div class="bg-decoration" style="bottom: 20%; left: 15%; width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); animation-delay: -3s;"></div>
+        
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <!-- Left side - Character at desk -->
+                <div class="reveal-left relative flex justify-center">
+                    <div class="relative">
+                        <!-- Character working dengan gambar laptop-girl.svg -->
+                        <div class="character-working floating">
+                            <img src="./static/laptop-girl.svg" alt="Working Girl">
+                        </div>
+                        
+                        <!-- Desk with laptop
+                        <div class="desk">
+                            <div class="laptop"></div>
+                        </div> -->
+                        
+                        <!-- Work elements floating around -->
+                        <!-- <div class="absolute -top-10 -right-10 w-12 h-12 bg-yellow-400 rounded-lg floating" style="animation-delay: -1s;">
+                            📊
+                        </div>
+                        <div class="absolute top-20 -left-8 w-10 h-10 bg-green-400 rounded-full floating" style="animation-delay: -2s;">
+                            ✅
+                        </div> -->
+                    </div>
+                </div>
+                
+                <!-- Right side - Text content -->
+                <div class="reveal-right"style="margin-top: 2rem; padding-top: 4rem;">
+                    <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 mb-8 leading-tight">
+                        REVOLUSI LAYANAN PELANGGAN ANDA DENGAN TUKANGCS
+                    </h2>
+                    
+                    <p class="text-xl text-white mb-8 leading-relaxed">
+                        Chatbot cerdas yang mengerti bisnis Anda. Otomatis, responsif, dan siap melayani pelanggan 24/7 di semua platform komunikasi.
+                    </p>
+                    
+                    <!-- Features list -->
+                    <div class="mb-8 space-y-4">
+                        <div class="flex items-center gap-3 reveal-element stagger-1">
+                            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+                            <span class="text-white">Integrasi multi-platform (WhatsApp, Telegram, Website)</span>
+                        </div>
+                        <div class="flex items-center gap-3 reveal-element stagger-2">
+                            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+                            <span class="text-white">AI yang belajar dari bisnis Anda</span>
+                        </div>
+                        <div class="flex items-center gap-3 reveal-element stagger-3">
+                            <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-sm">✓</div>
+                            <span class="text-white">Dashboard analytics dan laporan real-time</span>
+                        </div>
+                    </div>
+                    
+                    <!-- CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="btn-primary reveal-element stagger-1">
+                            🚀 Lihat Demo
+                        </button>
+                        <button class="btn-secondary reveal-element stagger-2">
+                            📅 Jadwalkan Konsultasi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+
+        </div>
+        <!-- Social media icons -->
+        <div class="max-w-6xl mx-auto text-center" style="margin-top: 2rem; padding-top: 4rem;"> 
+            <div class="reveal-element">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-8">
+                    Fitur Unggulan TukangCS
+                </h2>
+                <p class="text-xl text-gray-300 mb-16">
+                    Solusi lengkap untuk customer service yang lebih efisien dan profesional
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="reveal-element stagger-1 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                    <div class="text-6xl mb-6">🤖</div>
+                    <h3 class="text-2xl font-bold text-white mb-4">AI Cerdas</h3>
+                    <p class="text-gray-300">Chatbot yang memahami konteks percakapan dan memberikan respon yang relevan</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="reveal-element stagger-2 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                    <div class="text-6xl mb-6">📱</div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Multi Platform</h3>
+                    <p class="text-gray-300">Satu dashboard untuk kelola semua channel komunikasi pelanggan</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="reveal-element stagger-3 bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-8 border border-white border-opacity-20">
+                    <div class="text-6xl mb-6">📊</div>
+                    <h3 class="text-2xl font-bold text-white mb-4">Analytics</h3>
+                    <p class="text-gray-300">Laporan detail performa customer service dan tingkat kepuasan pelanggan</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Background stars -->
+        <div class="absolute top-20 left-10 w-2 h-2 bg-white rounded-full animate-pulse"></div>
+        <div class="absolute top-40 right-20 w-1 h-1 bg-white rounded-full animate-pulse" style="animation-delay: -1s;"></div>
+        <div class="absolute bottom-32 left-1/4 w-1.5 h-1.5 bg-white rounded-full animate-pulse" style="animation-delay: -2s;"></div>
+    </section>
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all reveal elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right');
+            revealElements.forEach(el => observer.observe(el));
+        });
+
+        // Enhanced button interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Add ripple effect
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                
+                button.style.position = 'relative';
+                button.style.overflow = 'hidden';
+                button.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+                
+                // Simple demo actions
+                if (button.textContent && button.textContent.includes('Demo')) {
+                    alert('🚀 Demo akan segera dimulai! Fitur ini akan menampilkan cara kerja TukangCS.');
+                } else if (button.textContent && button.textContent.includes('Konsultasi')) {
+                    alert('📅 Terima kasih! Tim kami akan menghubungi Anda untuk jadwal konsultasi gratis.');
+                }
+            });
+        });
+        
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Parallax effect for background elements
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.bg-decoration');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.1);
+                (element as HTMLElement).style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
