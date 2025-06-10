@@ -182,9 +182,6 @@
             width: 880px;
             height: 680px;
             display: inline; 
-            /* align-items: center; */
-            /* justify-content: center; */
-            /* font-size: 100px; */
             position: relative;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
@@ -232,12 +229,36 @@
             animation: floating 6s ease-in-out infinite;
         }
 
+        .character-sitting img,
+        .character-working img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+        
+        .text-svg {
+            max-width: 100%;
+            height: auto;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
-            .character-sitting, .character-working {
-                width: 200px;
-                height: 200px;
-                font-size: 80px;
+            /* Hide character images on mobile */
+            .character-sitting, 
+            .character-working {
+                display: none !important;
+            }
+            
+            /* Adjust grid layout for mobile */
+            .grid.lg\\:grid-cols-2 {
+                grid-template-columns: 1fr !important;
+                gap: 2rem !important;
+            }
+            
+            /* Center content on mobile */
+            .reveal-left, 
+            .reveal-right {
+                text-align: center;
             }
             
             .white-frame {
@@ -249,31 +270,50 @@
                 width: 240px;
                 height: 60px;
             }
-        }
-        .character-sitting img,
-        .character-working img {
-            width: 100%;
-            height: 100%;
-            object-fit: fill;
-            /* border-radius: 50%; */
-        }
-        
-        .text-svg {
-            max-width: 100%;
-            height: auto;
-        }
-        
-        /* CSS sebelumnya tetap dipertahankan */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            
+            /* Adjust text sizes for mobile */
+            .text-4xl.md\\:text-5xl {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem !important;
+            }
+            
+            /* Stack buttons vertically on mobile */
+            .flex.flex-col.sm\\:flex-row {
+                flex-direction: column !important;
+            }
+            
+            /* Adjust feature grid for mobile */
+            .grid.md\\:grid-cols-3 {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            overflow-x: hidden;
+        /* Additional mobile optimizations */
+        @media (max-width: 480px) {
+            /* Further reduce text sizes for very small screens */
+            .text-4xl.md\\:text-5xl {
+                font-size: 1.75rem !important;
+            }
+            
+            .text-xl {
+                font-size: 1rem !important;
+            }
+            
+            /* Reduce padding for very small screens */
+            .py-20 {
+                padding-top: 3rem !important;
+                padding-bottom: 3rem !important;
+            }
+            
+            .px-6 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
         }
     </style>
 </head>
@@ -314,26 +354,13 @@
                     <div class="relative">
                         <!-- Character working dengan gambar laptop-girl.svg -->
                         <div class="character-working floating">
-                            <img src="/images/working-girl.png" alt="Working Girl"onerror="this.innerHTML='👩‍💻';">
+                            <img src="/images/working-girl.png" alt="Working Girl" onerror="this.innerHTML='👩‍💻';">
                         </div>
-                        
-                        <!-- Desk with laptop
-                        <div class="desk">
-                            <div class="laptop"></div>
-                        </div> -->
-                        
-                        <!-- Work elements floating around -->
-                        <!-- <div class="absolute -top-10 -right-10 w-12 h-12 bg-yellow-400 rounded-lg floating" style="animation-delay: -1s;">
-                            📊
-                        </div>
-                        <div class="absolute top-20 -left-8 w-10 h-10 bg-green-400 rounded-full floating" style="animation-delay: -2s;">
-                            ✅
-                        </div> -->
                     </div>
                 </div>
                 
                 <!-- Right side - Text content -->
-                <div class="reveal-right"style="margin-top: 2rem; padding-top: 4rem;">
+                <div class="reveal-right" style="margin-top: 2rem; padding-top: 4rem;">
                     <h2 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600 mb-8 leading-tight">
                         REVOLUSI LAYANAN PELANGGAN ANDA DENGAN TUKANGCS
                     </h2>
