@@ -1,0 +1,736 @@
+---
+import Navbar from "../components/navbar/navbar.astro"
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TukangCS - Products</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Reveal animations */
+        .reveal-element, .reveal-left, .reveal-right {
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .reveal-left.visible {
+            animation: slideInLeft 0.8s ease forwards;
+        }
+
+        .reveal-right.visible {
+            animation: slideInRight 0.8s ease forwards;
+        }
+
+        .reveal-element.visible {
+            animation: slideInUp 0.8s ease forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.2s; }
+        .stagger-2 { animation-delay: 0.4s; }
+        .stagger-3 { animation-delay: 0.6s; }
+        .stagger-4 { animation-delay: 0.8s; }
+
+        /* Utility classes */
+        .min-h-screen { min-height: 100vh; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .overflow-hidden { overflow: hidden; }
+        .max-w-6xl { max-width: 72rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .text-center { text-align: center; }
+        .flex { display: flex; }
+        .justify-center { justify-content: center; }
+        .items-center { align-items: center; }
+        .gap-12 { gap: 3rem; }
+        .gap-8 { gap: 2rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-3 { gap: 0.75rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-16 { margin-top: 4rem; }
+        .space-y-4 > * + * { margin-top: 1rem; }
+        .space-y-6 > * + * { margin-top: 1.5rem; }
+
+        /* Grid system */
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: 1fr; }
+        .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .lg-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+        /* Typography */
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-5xl { font-size: 3rem; line-height: 1; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .font-bold { font-weight: 700; }
+        .font-black { font-weight: 900; }
+        .font-semibold { font-weight: 600; }
+        .leading-tight { line-height: 1.25; }
+        .leading-relaxed { line-height: 1.625; }
+
+        /* Colors */
+        .text-white { color: white; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-200 { color: #e5e7eb; }
+        .text-purple-200 { color: #ddd6fe; }
+        .bg-white { background-color: white; }
+        .bg-green-500 { background-color: #10b981; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-purple-500 { background-color: #8b5cf6; }
+
+        /* Background gradients */
+        .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
+        }
+
+        .bg-gradient-to-r {
+            background: linear-gradient(to right, #9333ea, #2563eb);
+        }
+
+        .text-transparent {
+            color: transparent;
+        }
+
+        .bg-clip-text {
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Glass effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            padding: 12px 24px;
+            border: 2px solid #667eea;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Product cards */
+        .product-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .product-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 1.5rem;
+            position: relative;
+        }
+
+        .product-icon.icon-1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .product-icon.icon-2 {
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+        }
+
+        .product-icon.icon-3 {
+            background: linear-gradient(135deg, #FFA726, #FB8C00);
+        }
+
+        /* Feature list */
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            color: #e5e7eb;
+        }
+
+        .feature-check {
+            width: 20px;
+            height: 20px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        /* Pricing badge */
+        .pricing-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        /* Background decorations */
+        .bg-decoration {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        /* Animated stars */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .star-1 {
+            top: 15%;
+            left: 10%;
+            width: 8px;
+            height: 8px;
+        }
+
+        .star-2 {
+            top: 25%;
+            right: 15%;
+            width: 6px;
+            height: 6px;
+            animation-delay: -1s;
+        }
+
+        .star-3 {
+            bottom: 30%;
+            left: 20%;
+            width: 4px;
+            height: 4px;
+            animation-delay: -2s;
+        }
+
+        .star-4 {
+            top: 60%;
+            right: 25%;
+            width: 5px;
+            height: 5px;
+            animation-delay: -1.5s;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 768px) {
+            .md-grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .md-text-5xl {
+                font-size: 3rem;
+                line-height: 1;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .lg-grid-cols-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .md-grid-cols-2,
+            .lg-grid-cols-3 {
+                grid-template-columns: 1fr !important;
+                gap: 1.5rem !important;
+            }
+            
+            .text-4xl,
+            .md-text-5xl {
+                font-size: 2rem !important;
+                line-height: 1.2 !important;
+            }
+            
+            .text-xl {
+                font-size: 1.125rem !important;
+            }
+            
+            .px-6 {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+            
+            .py-20 {
+                padding-top: 3rem !important;
+                padding-bottom: 3rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .text-4xl,
+            .md-text-5xl {
+                font-size: 1.75rem !important;
+            }
+            
+            .text-xl {
+                font-size: 1rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <Navbar />
+  <!-- Product Page Section -->
+  <section class="mt-0 min-h-screen bg-gradient-to-br py-20 px-6 relative overflow-hidden"style="margin-top: 2rem;">
+        <!-- Background decorations -->
+        <div class="bg-decoration" style="top: 10%; left: 10%; width: 80px; height: 80px; background: white;"></div>
+        <div class="bg-decoration" style="top: 70%; right: 15%; width: 60px; height: 60px; background: white; animation-delay: -2s;"></div>
+        <div class="bg-decoration" style="top: 40%; left: 20%; width: 40px; height: 40px; background: white; animation-delay: -4s;"></div>
+        <div class="bg-decoration" style="top: 15%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+        <div class="bg-decoration" style="bottom: 20%; left: 15%; width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); animation-delay: -3s;"></div>
+        
+        <!-- Animated stars -->
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        <div class="star star-4"></div>
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Header -->
+             
+            <div class="text-center mb-16">
+
+                <div class="reveal-element">
+                    <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight">
+                        
+                        PRODUK TUKANGCS
+                    </h1>
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Pilih solusi AI Customer Service yang tepat untuk bisnis Anda
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="grid lg-grid-cols-3 gap-8 mb-16">
+                <!-- Product 1 - Starter -->
+                <div class="product-card reveal-element stagger-1">
+                    <div class="pricing-badge">STARTER</div>
+                    <div class="product-icon icon-1">🚀</div>
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Basic</h3>
+                    <p class="text-gray-200 mb-6 text-center">
+                        Solusi dasar untuk bisnis kecil yang ingin memulai otomasi customer service
+                    </p>
+                    
+                    <ul class="feature-list mb-8">
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Chatbot WhatsApp & Telegram</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>AI Response hingga 1500 pesan/bulan</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Dashboard analytics dasar</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Template FAQ siap pakai</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Support via email</span>
+                    </ul>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white mb-2">Rp 149.000</div>
+                        <div class="text-sm text-gray-300 mb-6">/bulan</div>
+                        <button class="btn-primary w-full">
+                            🚀 Mulai Gratis 7 Hari
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 2 - Professional -->
+                <div class="product-card reveal-element stagger-2" style="transform: scale(1.05); border-color: rgba(102, 126, 234, 0.5);">
+                    <div class="pricing-badge" style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4);">TERPOPULER</div>
+                    <div class="product-icon icon-2">⭐</div>
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Pro</h3>
+                    <p class="text-gray-200 mb-6 text-center">
+                        Solusi lengkap untuk bisnis menengah dengan fitur advanced AI
+                    </p>
+                    
+                    <ul class="feature-list mb-8">
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Integrasi multi-platform (WhatsApp, Telegram, Webchat)</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>AI Response unlimited</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Advanced analytics & reports</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Custom AI training</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Live chat handover</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Priority support</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white mb-2">Rp 499.000</div>
+                        <div class="text-sm text-gray-300 mb-6">/bulan</div>
+                        <button class="btn-primary w-full">
+                            ⭐ Coba Gratis 14 Hari
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product 3 - Enterprise -->
+                <div class="product-card reveal-element stagger-3">
+                    <div class="pricing-badge" style="background: linear-gradient(135deg, #FFA726, #FB8C00);">ENTERPRISE</div>
+                    <div class="product-icon icon-3">🏢</div>
+                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Enterprise</h3>
+                    <p class="text-gray-200 mb-6 text-center">
+                        Solusi korporat dengan customization penuh dan dedicated support
+                    </p>
+                    
+                    <ul class="feature-list mb-8">
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>White-label solution</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Custom API integration</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Enterprise-grade security</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Multi-tenant architecture</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>Dedicated account manager</span>
+                        </li>
+                        <li class="feature-item">
+                            <div class="feature-check">✓</div>
+                            <span>24/7 phone support</span>
+                        </li>
+                    </ul>
+                    
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-white mb-2">Custom</div>
+                        <div class="text-sm text-gray-300 mb-6">Hubungi kami</div>
+                        <button class="btn-secondary w-full">
+                            📞 Konsultasi Gratis
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Features Section -->
+            <div class="mt-16">
+                <div class="text-center mb-12">
+                    <div class="reveal-element">
+                        <h2 class="text-3xl font-bold text-white mb-6">
+                            Mengapa Memilih TukangCS?
+                        </h2>
+                        <p class="text-lg text-gray-300">
+                            Semua paket dilengkapi dengan fitur unggulan ini
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid md-grid-cols-2 gap-8">
+                    <!-- Feature 1 -->
+                    <div class="glass-effect p-6 reveal-element stagger-1">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-4xl">🤖</div>
+                            <h3 class="text-xl font-semibold text-white">AI Indonesia</h3>
+                        </div>
+                        <p class="text-gray-200">
+                            Dilatih khusus untuk memahami bahasa dan budaya Indonesia, 
+                            memberikan respon yang natural dan relevan.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="glass-effect p-6 reveal-element stagger-2">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-4xl">🔒</div>
+                            <h3 class="text-xl font-semibold text-white">Data Security</h3>
+                        </div>
+                        <p class="text-gray-200">
+                            Keamanan data tingkat enterprise dengan enkripsi end-to-end 
+                            dan compliance dengan standar internasional.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="glass-effect p-6 reveal-element stagger-3">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-4xl">⚡</div>
+                            <h3 class="text-xl font-semibold text-white">Setup Cepat</h3>
+                        </div>
+                        <p class="text-gray-200">
+                            Instalasi dan konfigurasi dalam hitungan menit, 
+                            tidak perlu technical expertise yang mendalam.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="glass-effect p-6 reveal-element stagger-4">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="text-4xl">📈</div>
+                            <h3 class="text-xl font-semibold text-white">ROI Terbukti</h3>
+                        </div>
+                        <p class="text-gray-200">
+                            Rata-rata klien menghemat 40% biaya customer service 
+                            dan meningkatkan response time hingga 10x lipat.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="text-center mt-16">
+                <div class="reveal-element">
+                    <h2 class="text-3xl font-bold text-white mb-6">
+                        Siap Menggunakan TukangCS?
+                    </h2>
+                    <p class="text-lg text-gray-300 mb-8">
+                        Mulai transformasi digital customer service Anda hari ini
+                    </p>
+                    <div class="flex justify-center gap-4">
+                        <button class="btn-primary">
+                            🚀 Mulai Gratis
+                        </button>
+                        <button class="btn-secondary">
+                            📞 Hubungi Sales
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all reveal elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right');
+            revealElements.forEach(el => observer.observe(el));
+        });
+
+        // Enhanced button interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Add ripple effect
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                
+                button.style.position = 'relative';
+                button.style.overflow = 'hidden';
+                button.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+                
+                // Demo actions
+                const buttonText = button.textContent || '';
+                if (buttonText.includes('Gratis')) {
+                    alert('🎉 Selamat! Anda akan diarahkan ke halaman pendaftaran trial gratis.');
+                } else if (buttonText.includes('Konsultasi') || buttonText.includes('Sales')) {
+                    alert('📞 Tim sales kami akan menghubungi Anda dalam 1x24 jam untuk konsultasi gratis.');
+                } else if (buttonText.includes('Mulai')) {
+                    alert('🚀 Terima kasih! Silakan pilih paket yang sesuai dengan kebutuhan bisnis Anda.');
+                }
+            });
+        });
+
+        // Parallax effect for background elements
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.bg-decoration');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.1);
+                (element as HTMLElement).style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Product card hover effects
+ document.querySelectorAll('.product-card').forEach(card => {
+    const cardElement = card as HTMLElement;
+    
+    cardElement.addEventListener('mouseenter', () => {
+        cardElement.style.transform = cardElement.style.transform === 'scale(1.05)' ? 
+            'translateY(-5px) scale(1.05)' : 'translateY(-5px) scale(1.02)';
+    });
+    
+    cardElement.addEventListener('mouseleave', () => {
+        cardElement.style.transform = cardElement.style.transform.includes('scale(1.05)') ? 
+            'scale(1.05)' : 'scale(1)';
+    });
+});
+    </script>
+</body>
+</html>
