@@ -391,6 +391,42 @@ import Navbar from "../components/navbar/navbar.astro"
                 font-size: 1rem !important;
             }
         }
+        /* Grid system - FIXED */
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    /* Image styling */
+    .hero-image {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+        .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 3rem;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-image {
+            max-width: 300px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-image {
+            max-width: 250px;
+        }
+    }
     </style>
 </head>
 <body>
@@ -410,21 +446,48 @@ import Navbar from "../components/navbar/navbar.astro"
         <div class="star star-3"></div>
         <div class="star star-4"></div>
         <div class="max-w-6xl mx-auto">
+        
+        <div class="text-center mb-16">
+                <div class="reveal-element">
+                    <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight">
+                        PRODUK TUKANGCS
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="hero-grid">
+                <!-- Left side (text) -->
+                <div class="reveal-left">
+                    <h2 class="text-3xl text-5xl font-bold text-white mb-4">
+                        Kelola percakapan dari banyak platform dalam satu dashboard
+                    </h2>
+                    <p class="text-lg text-gray-300">
+                        Integrasikan WhatsApp, Telegram, dan platform chat lainnya dengan mudah. 
+                        Dapatkan kontrol penuh atas semua komunikasi pelanggan Anda dalam satu tempat yang praktis dan efisien.
+                    </p>
+                </div>
+                
+                <!-- Right side (image) -->
+                <div class="reveal-right flex justify-center items-center">
+                    <div class="floating">
+                        <img src="/images/platform.png" 
+                            alt="Customer Service Dashboard" 
+                            class="hero-image">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto"style="margin-top: 4rem;">
+            
             <!-- Page Header -->
-             
             <div class="text-center mb-16">
 
                 <div class="reveal-element">
                     <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight">
-                        
-                        PRODUK TUKANGCS
-                    </h1>
-                    <p class="text-xl text-gray-300 leading-relaxed">
                         Pilih solusi AI Customer Service yang tepat untuk bisnis Anda
-                    </p>
+                    </h1>
                 </div>
             </div>
-            
             <!-- Products Grid -->
             <div class="grid lg-grid-cols-3 gap-8 mb-16">
                 <!-- Product 1 - Starter -->
