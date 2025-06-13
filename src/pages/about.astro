@@ -1,12 +1,9 @@
----
-import Navbar from "../components/navbar/navbar.astro"
----
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TukangCS - Products</title>
+    <title>TukangCS - About Us</title>
     <style>
         * {
             margin: 0;
@@ -46,10 +43,14 @@ import Navbar from "../components/navbar/navbar.astro"
             50% { opacity: 1; }
         }
 
-        @keyframes ripple {
-            to {
-                transform: scale(4);
+        @keyframes fadeInScale {
+            from { 
                 opacity: 0;
+                transform: scale(0.8);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
             }
         }
 
@@ -71,10 +72,31 @@ import Navbar from "../components/navbar/navbar.astro"
             animation: slideInUp 0.8s ease forwards;
         }
 
+        .fade-scale.visible {
+            animation: fadeInScale 0.8s ease forwards;
+        }
+
         .stagger-1 { animation-delay: 0.2s; }
         .stagger-2 { animation-delay: 0.4s; }
         .stagger-3 { animation-delay: 0.6s; }
         .stagger-4 { animation-delay: 0.8s; }
+
+        /* Background gradients */
+        .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
+        }
+
+        .bg-gradient-to-r {
+            background: linear-gradient(to right, #9333ea, #2563eb);
+        }
+
+        /* Glass effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+        }
 
         /* Utility classes */
         .min-h-screen { min-height: 100vh; }
@@ -93,25 +115,23 @@ import Navbar from "../components/navbar/navbar.astro"
         .gap-8 { gap: 2rem; }
         .gap-6 { gap: 1.5rem; }
         .gap-4 { gap: 1rem; }
-        .gap-3 { gap: 0.75rem; }
-        .mb-8 { margin-bottom: 2rem; }
         .mb-16 { margin-bottom: 4rem; }
         .mb-12 { margin-bottom: 3rem; }
+        .mb-8 { margin-bottom: 2rem; }
         .mb-6 { margin-bottom: 1.5rem; }
         .mb-4 { margin-bottom: 1rem; }
         .mt-16 { margin-top: 4rem; }
-        .space-y-4 > * + * { margin-top: 1rem; }
-        .space-y-6 > * + * { margin-top: 1.5rem; }
+        .mt-8 { margin-top: 2rem; }
 
         /* Grid system */
         .grid { display: grid; }
-        .grid-cols-1 { grid-template-columns: 1fr; }
-        .md-grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-        .lg-grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 
         /* Typography */
-        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
         .text-5xl { font-size: 3rem; line-height: 1; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
         .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
         .text-2xl { font-size: 1.5rem; line-height: 2rem; }
         .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
@@ -129,35 +149,11 @@ import Navbar from "../components/navbar/navbar.astro"
         .text-gray-300 { color: #d1d5db; }
         .text-gray-200 { color: #e5e7eb; }
         .text-purple-200 { color: #ddd6fe; }
-        .bg-white { background-color: white; }
-        .bg-green-500 { background-color: #10b981; }
-        .bg-blue-500 { background-color: #3b82f6; }
-        .bg-purple-500 { background-color: #8b5cf6; }
-
-        /* Background gradients */
-        .bg-gradient-to-br {
-            background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
-        }
-
-        .bg-gradient-to-r {
-            background: linear-gradient(to right, #9333ea, #2563eb);
-        }
-
-        .text-transparent {
-            color: transparent;
-        }
-
+        .text-blue-300 { color: #93c5fd; }
+        .text-transparent { color: transparent; }
         .bg-clip-text {
             -webkit-background-clip: text;
             background-clip: text;
-        }
-
-        /* Glass effect */
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 1rem;
         }
 
         /* Button styles */
@@ -180,113 +176,85 @@ import Navbar from "../components/navbar/navbar.astro"
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
-        .btn-secondary {
-            background: transparent;
-            color: #667eea;
-            padding: 12px 24px;
-            border: 2px solid #667eea;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        /* About hero section */
+        .about-hero {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 4rem;
         }
 
-        .btn-secondary:hover {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        /* Product cards */
-        .product-card {
+        /* Team member card */
+        .team-member {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border-radius: 1.5rem;
             padding: 2rem;
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            text-align: center;
         }
 
-        .product-card:hover {
+        .team-member:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             border-color: rgba(255, 255, 255, 0.3);
         }
 
-        .product-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .product-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            margin: 0 auto 1.5rem;
-            position: relative;
-        }
-
-        .product-icon.icon-1 {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
-
-        .product-icon.icon-2 {
-            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
-        }
-
-        .product-icon.icon-3 {
-            background: linear-gradient(135deg, #FFA726, #FB8C00);
-        }
-
-        /* Feature list */
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            color: #e5e7eb;
-        }
-
-        .feature-check {
-            width: 20px;
-            height: 20px;
-            background-color: #10b981;
+        .team-avatar {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 12px;
-            flex-shrink: 0;
+            font-size: 3rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Pricing badge */
-        .pricing-badge {
+        .team-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Stats section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
             background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1rem;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
         }
 
         /* Background decorations */
@@ -336,103 +304,75 @@ import Navbar from "../components/navbar/navbar.astro"
             animation-delay: -1.5s;
         }
 
-        /* Responsive Design */
-        @media (min-width: 768px) {
-            .md-grid-cols-2 {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .md-text-5xl {
-                font-size: 3rem;
-                line-height: 1;
-            }
+        /* Values section */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
         }
 
-        @media (min-width: 1024px) {
-            .lg-grid-cols-3 {
-                grid-template-columns: repeat(3, 1fr);
+        .value-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .value-item:nth-child(1) { border-left-color: #667eea; }
+        .value-item:nth-child(2) { border-left-color: #FF6B6B; }
+        .value-item:nth-child(3) { border-left-color: #4ECDC4; }
+
+        .value-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .value-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
-            .md-grid-cols-2,
-            .lg-grid-cols-3 {
-                grid-template-columns: 1fr !important;
-                gap: 1.5rem !important;
-            }
-            
-            .text-4xl,
-            .md-text-5xl {
-                font-size: 2rem !important;
-                line-height: 1.2 !important;
-            }
-            
-            .text-xl {
-                font-size: 1.125rem !important;
-            }
-            
             .px-6 {
-                padding-left: 1rem !important;
-                padding-right: 1rem !important;
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
             
             .py-20 {
-                padding-top: 3rem !important;
-                padding-bottom: 3rem !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .text-4xl,
-            .md-text-5xl {
-                font-size: 1.75rem !important;
+                padding-top: 3rem;
+                padding-bottom: 3rem;
             }
             
-            .text-xl {
-                font-size: 1rem !important;
+            .text-5xl {
+                font-size: 2rem;
+            }
+            
+            .text-4xl {
+                font-size: 1.75rem;
+            }
+            
+            .about-hero {
+                padding: 2rem;
+            }
+            
+            .team-member {
+                padding: 1.5rem;
             }
         }
-        /* Grid system - FIXED */
-    .hero-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        align-items: center;
-    }
-
-    /* Image styling */
-    .hero-image {
-        width: 100%;
-        max-width: 400px;
-        height: auto;
-        filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.3));
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .hero-grid {
-            grid-template-columns: 1fr;
-            gap: 3rem;
-            text-align: center;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .hero-image {
-            max-width: 300px;
-        }
-    }
-
-    @media (max-width: 880px) {
-        .hero-image {
-            max-width: 850px;
-        }
-    }
     </style>
 </head>
 <body>
-    <Navbar />
-  <!-- Product Page Section -->
-  <section class="mt-0 min-h-screen bg-gradient-to-br py-20 px-6 relative overflow-hidden"style="margin-top: 2rem;">
+    <!-- About Section -->
+    <section class="min-h-screen bg-gradient-to-br py-20 px-6 relative overflow-hidden">
         <!-- Background decorations -->
         <div class="bg-decoration" style="top: 10%; left: 10%; width: 80px; height: 80px; background: white;"></div>
         <div class="bg-decoration" style="top: 70%; right: 15%; width: 60px; height: 60px; background: white; animation-delay: -2s;"></div>
@@ -445,263 +385,176 @@ import Navbar from "../components/navbar/navbar.astro"
         <div class="star star-2"></div>
         <div class="star star-3"></div>
         <div class="star star-4"></div>
+
         <div class="max-w-6xl mx-auto">
-        
-        <div class="text-center mb-16">
-                <div class="reveal-element">
-                    <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight">
-                        PRODUK TUKANGCS
-                    </h1>
-                </div>
-            </div>
-            
-            <div class="hero-grid">
-                <!-- Left side (text) -->
-                <div class="reveal-left">
-                    <h2 class="text-3xl text-5xl font-bold text-white mb-4">
-                        Kelola percakapan dari banyak platform dalam satu dashboard
-                    </h2>
-                    <p class="text-lg text-gray-300">
-                        Integrasikan WhatsApp, Telegram, dan platform chat lainnya dengan mudah. 
-                        Dapatkan kontrol penuh atas semua komunikasi pelanggan Anda dalam satu tempat yang praktis dan efisien.
-                    </p>
-                </div>
-                
-                <!-- Right side (image) -->
-                <div class="reveal-right flex justify-center items-center">
-                    <div class="floating">
-                        <img src="/images/platform.png" 
-                            alt="Customer Service Dashboard" 
-                            class="hero-image">
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="max-w-6xl mx-auto"style="margin-top: 4rem;">
-            
             <!-- Page Header -->
             <div class="text-center mb-16">
-
                 <div class="reveal-element">
-                    <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight">
-                        Pilih solusi AI Customer Service yang tepat untuk bisnis Anda
+                    <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-6 leading-tight">
+                        ABOUT US
                     </h1>
-                </div>
-            </div>
-            <!-- Products Grid -->
-            <div class="grid lg-grid-cols-3 gap-8 mb-16">
-                <!-- Product 1 - Starter -->
-                <div class="product-card reveal-element stagger-1">
-                    <div class="pricing-badge">STARTER</div>
-                    <div class="product-icon icon-1">🚀</div>
-                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Basic</h3>
-                    <p class="text-gray-200 mb-6 text-center">
-                        Solusi dasar untuk bisnis kecil yang ingin memulai otomasi customer service
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Kami Adalah Memberdayakan Bisnis Anda<br>
+                        Melalui Layanan Pelanggan Cerdas
                     </p>
-                    
-                    <ul class="feature-list mb-8">
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Chatbot WhatsApp & Telegram</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>AI Response hingga 1500 pesan/bulan</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Dashboard analytics dasar</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Template FAQ siap pakai</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Support via email</span>
-                    </ul>
-                    
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-2">Rp 149.000</div>
-                        <div class="text-sm text-gray-300 mb-6">/bulan</div>
-                        <button class="btn-primary w-full">
-                            🚀 Mulai Gratis 7 Hari
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Product 2 - Professional -->
-                <div class="product-card reveal-element stagger-2" style="transform: scale(1.05); border-color: rgba(102, 126, 234, 0.5);">
-                    <div class="pricing-badge" style="background: linear-gradient(135deg, #FF6B6B, #4ECDC4);">TERPOPULER</div>
-                    <div class="product-icon icon-2">⭐</div>
-                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Pro</h3>
-                    <p class="text-gray-200 mb-6 text-center">
-                        Solusi lengkap untuk bisnis menengah dengan fitur advanced AI
-                    </p>
-                    
-                    <ul class="feature-list mb-8">
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Integrasi multi-platform (WhatsApp, Telegram, Webchat)</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>AI Response unlimited</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Advanced analytics & reports</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Custom AI training</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Live chat handover</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Priority support</span>
-                        </li>
-                    </ul>
-                    
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-2">Rp 499.000</div>
-                        <div class="text-sm text-gray-300 mb-6">/bulan</div>
-                        <button class="btn-primary w-full">
-                            ⭐ Coba Gratis 14 Hari
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Product 3 - Enterprise -->
-                <div class="product-card reveal-element stagger-3">
-                    <div class="pricing-badge" style="background: linear-gradient(135deg, #FFA726, #FB8C00);">ENTERPRISE</div>
-                    <div class="product-icon icon-3">🏢</div>
-                    <h3 class="text-2xl font-bold text-white mb-4 text-center">TukangCS Enterprise</h3>
-                    <p class="text-gray-200 mb-6 text-center">
-                        Solusi korporat dengan customization penuh dan dedicated support
-                    </p>
-                    
-                    <ul class="feature-list mb-8">
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>White-label solution</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Custom API integration</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Enterprise-grade security</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Multi-tenant architecture</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>Dedicated account manager</span>
-                        </li>
-                        <li class="feature-item">
-                            <div class="feature-check">✓</div>
-                            <span>24/7 phone support</span>
-                        </li>
-                    </ul>
-                    
-                    <div class="text-center">
-                        <div class="text-3xl font-bold text-white mb-2">Custom</div>
-                        <div class="text-sm text-gray-300 mb-6">Hubungi kami</div>
-                        <button class="btn-secondary w-full">
-                            📞 Konsultasi Gratis
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            <!-- Additional Features Section -->
-            <div class="mt-16">
+            <!-- About Hero -->
+            <div class="about-hero reveal-element">
+                <div class="flex items-center gap-8 mb-8">
+                    <div class="text-6xl">🤝</div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Visi Kami</h2>
+                        <p class="text-lg text-gray-200">
+                            Menjadi pionir dalam transformasi digital customer service di Indonesia
+                        </p>
+                    </div>
+                </div>
+                <p class="text-lg text-gray-300 leading-relaxed">
+                    TukangCS hadir untuk membantu bisnis Indonesia mengoptimalkan layanan pelanggan 
+                    melalui teknologi AI yang canggih namun mudah digunakan. Kami percaya bahwa setiap 
+                    bisnis, dari UMKM hingga enterprise, berhak mendapatkan tools berkualitas tinggi 
+                    untuk memberikan pengalaman pelanggan yang luar biasa.
+                </p>
+            </div>
+
+            <!-- Mission Section -->
+            <div class="reveal-element mb-16">
+                <h2 class="text-3xl font-bold text-white mb-8 text-center">
+                    CS AI Generasi Baru: Efisien, Personal, Terintegrasi
+                </h2>
+                <div class="glass-effect p-8 text-center">
+                    <p class="text-lg text-gray-200 leading-relaxed">
+                        Kami hadirkan solusi customer service AI pintar yang adaptif dan terintegrasi, 
+                        memberdayakan tim layanan pelanggan yang lebih efisien dan personal. 
+                        Dengan teknologi terdepan, kami menghadirkan pengalaman pelanggan yang 
+                        seamless di berbagai platform komunikasi.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-grid reveal-element mb-16">
+                <div class="stat-item fade-scale stagger-1">
+                    <div class="stat-number">500+</div>
+                    <div class="text-white font-semibold">Bisnis Terlayani</div>
+                    <div class="text-gray-300 text-sm">di seluruh Indonesia</div>
+                </div>
+                <div class="stat-item fade-scale stagger-2">
+                    <div class="stat-number">1M+</div>
+                    <div class="text-white font-semibold">Pesan Diproses</div>
+                    <div class="text-gray-300 text-sm">setiap bulannya</div>
+                </div>
+                <div class="stat-item fade-scale stagger-3">
+                    <div class="stat-number">99.9%</div>
+                    <div class="text-white font-semibold">Uptime</div>
+                    <div class="text-gray-300 text-sm">reliability terjamin</div>
+                </div>
+                <div class="stat-item fade-scale stagger-4">
+                    <div class="stat-number">24/7</div>
+                    <div class="text-white font-semibold">Support</div>
+                    <div class="text-gray-300 text-sm">tim selalu siap membantu</div>
+                </div>
+            </div>
+
+            <!-- Our Team Section -->
+            <div class="mb-16">
                 <div class="text-center mb-12">
                     <div class="reveal-element">
-                        <h2 class="text-3xl font-bold text-white mb-6">
-                            Mengapa Memilih TukangCS?
-                        </h2>
+                        <h2 class="text-3xl font-bold text-white mb-6">Our Team</h2>
                         <p class="text-lg text-gray-300">
-                            Semua paket dilengkapi dengan fitur unggulan ini
+                            Tim berpengalaman yang berdedikasi untuk kesuksesan Anda
                         </p>
                     </div>
                 </div>
 
-                <div class="grid md-grid-cols-2 gap-8">
-                    <!-- Feature 1 -->
-                    <div class="glass-effect p-6 reveal-element stagger-2">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="text-4xl">🤖</div>
-                            <h3 class="text-xl font-semibold text-white">AI Indonesia</h3>
+                <div class="grid grid-cols-2 gap-8">
+                    <!-- Team Member 1 -->
+                    <div class="team-member reveal-left">
+                        <div class="team-avatar">
+                            👨‍💼
                         </div>
-                        <p class="text-gray-200">
-                            Dilatih khusus untuk memahami bahasa dan budaya Indonesia, 
-                            memberikan respon yang natural dan relevan.
+                        <h3 class="text-xl font-bold text-white mb-2">Difa Diyaul Haq</h3>
+                        <p class="text-blue-300 font-semibold mb-2">Founder</p>
+                        <p class="text-sm text-gray-300 mb-4">22.01.2024</p>
+                        <p class="text-gray-200 text-sm leading-relaxed">
+                            Visioner di balik TukangCS dengan pengalaman 8+ tahun di bidang teknologi 
+                            dan customer experience. Berkomitmen menghadirkan solusi AI yang accessible 
+                            untuk semua bisnis Indonesia.
                         </p>
                     </div>
 
-                    <!-- Feature 2 -->
-                    <div class="glass-effect p-6 reveal-element stagger-2">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="text-4xl">🔒</div>
-                            <h3 class="text-xl font-semibold text-white">Data Security</h3>
+                    <!-- Team Member 2 -->
+                    <div class="team-member reveal-right">
+                        <div class="team-avatar">
+                            👨‍💻
                         </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Bonaventura Isaac Guric</h3>
+                        <p class="text-blue-300 font-semibold mb-2">Co-Founder</p>
+                        <p class="text-sm text-gray-300 mb-4">22.01.2024</p>
+                        <p class="text-gray-200 text-sm leading-relaxed">
+                            Tech lead dengan expertise dalam AI/ML dan system architecture. 
+                            Bertanggung jawab memastikan platform TukangCS selalu menggunakan 
+                            teknologi terdepan dan reliable.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Our Values Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <div class="reveal-element">
+                        <h2 class="text-3xl font-bold text-white mb-6">Nilai-Nilai Kami</h2>
+                        <p class="text-lg text-gray-300">
+                            Prinsip yang memandu setiap langkah kami
+                        </p>
+                    </div>
+                </div>
+
+                <div class="values-grid">
+                    <div class="value-item reveal-element stagger-1">
+                        <div class="value-icon">🚀</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Inovasi Berkelanjutan</h3>
                         <p class="text-gray-200">
-                            Keamanan data tingkat enterprise dengan enkripsi end-to-end 
-                            dan compliance dengan standar internasional.
+                            Kami selalu mengembangkan teknologi terbaru untuk memberikan 
+                            solusi yang lebih baik dan efisien bagi pelanggan.
                         </p>
                     </div>
 
-                    <!-- Feature 3 -->
-                    <div class="glass-effect p-6 reveal-element stagger-3">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="text-4xl">⚡</div>
-                            <h3 class="text-xl font-semibold text-white">Setup Cepat</h3>
-                        </div>
+                    <div class="value-item reveal-element stagger-2">
+                        <div class="value-icon">🤝</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Customer First</h3>
                         <p class="text-gray-200">
-                            Instalasi dan konfigurasi dalam hitungan menit, 
-                            tidak perlu technical expertise yang mendalam.
+                            Kepuasan dan kesuksesan pelanggan adalah prioritas utama dalam 
+                            setiap keputusan dan pengembangan produk kami.
                         </p>
                     </div>
 
-                    <!-- Feature 4 -->
-                    <div class="glass-effect p-6 reveal-element stagger-4">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="text-4xl">📈</div>
-                            <h3 class="text-xl font-semibold text-white">ROI Terbukti</h3>
-                        </div>
+                    <div class="value-item reveal-element stagger-3">
+                        <div class="value-icon">💎</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Kualitas Terjamin</h3>
                         <p class="text-gray-200">
-                            Rata-rata klien menghemat 40% biaya customer service 
-                            dan meningkatkan response time hingga 10x lipat.
+                            Kami berkomitmen memberikan produk dan layanan berkualitas tinggi 
+                            dengan standar enterprise untuk semua segmen bisnis.
                         </p>
                     </div>
                 </div>
             </div>
 
             <!-- CTA Section -->
-            <div class="text-center mt-16">
+            <div class="text-center">
                 <div class="reveal-element">
                     <h2 class="text-3xl font-bold text-white mb-6">
-                        Siap Menggunakan TukangCS?
+                        Siap Bergabung dengan Kami?
                     </h2>
                     <p class="text-lg text-gray-300 mb-8">
-                        Mulai transformasi digital customer service Anda hari ini
+                        Mari bersama-sama menghadirkan customer experience terbaik untuk bisnis Anda
                     </p>
-                    <div class="flex justify-center gap-4">
-                        <button class="btn-primary">
-                            🚀 Mulai Gratis
-                        </button>
-                        <button class="btn-secondary">
-                            📞 Hubungi Sales
-                        </button>
-                    </div>
+                    <button class="btn-primary">
+                        🚀 Mulai Sekarang
+                    </button>
                 </div>
             </div>
         </div>
@@ -724,7 +577,7 @@ import Navbar from "../components/navbar/navbar.astro"
 
         // Observe all reveal elements
         document.addEventListener('DOMContentLoaded', () => {
-            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right');
+            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right, .fade-scale');
             revealElements.forEach(el => observer.observe(el));
         });
 
@@ -757,15 +610,7 @@ import Navbar from "../components/navbar/navbar.astro"
                 
                 setTimeout(() => ripple.remove(), 600);
                 
-                // Demo actions
-                const buttonText = button.textContent || '';
-                if (buttonText.includes('Gratis')) {
-                    alert('🎉 Selamat! Anda akan diarahkan ke halaman pendaftaran trial gratis.');
-                } else if (buttonText.includes('Konsultasi') || buttonText.includes('Sales')) {
-                    alert('📞 Tim sales kami akan menghubungi Anda dalam 1x24 jam untuk konsultasi gratis.');
-                } else if (buttonText.includes('Mulai')) {
-                    alert('🚀 Terima kasih! Silakan pilih paket yang sesuai dengan kebutuhan bisnis Anda.');
-                }
+                alert('🎉 Terima kasih atas minat Anda! Tim kami akan segera menghubungi Anda.');
             });
         });
 
@@ -780,20 +625,17 @@ import Navbar from "../components/navbar/navbar.astro"
             });
         });
 
-        // Product card hover effects
- document.querySelectorAll('.product-card').forEach(card => {
-    const cardElement = card as HTMLElement;
-    
-    cardElement.addEventListener('mouseenter', () => {
-        cardElement.style.transform = cardElement.style.transform === 'scale(1.05)' ? 
-            'translateY(-5px) scale(1.05)' : 'translateY(-5px) scale(1.02)';
-    });
-    
-    cardElement.addEventListener('mouseleave', () => {
-        cardElement.style.transform = cardElement.style.transform.includes('scale(1.05)') ? 
-            'scale(1.05)' : 'scale(1)';
-    });
-});
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
