@@ -1,17 +1,417 @@
 ---
-import Navbar from "../components/navbar/navbar.astro";
+import Footer from "../components/footer/footer.astro"
+import Navbar from "../components/navbar/navbar.astro"
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Contact - Arctiq</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f2027 100%);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00d4aa;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00d4aa;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-actions a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-actions .sign-in {
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid #00d4aa;
+            color: #00d4aa;
+        }
+
+        .nav-actions .sign-in:hover {
+            background: #00d4aa;
+            color: white;
+        }
+
+        /* Main Content */
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            gap: 4rem;
+            align-items: flex-start;
+        }
+
+        .form-section {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .form-section h1 {
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.2;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #00d4aa;
+            background: rgba(0, 212, 170, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background: white;
+            color: #1a1a1a;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Testimonial Section */
+        .testimonial-section {
+            flex: 1;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .testimonial-card {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1) 0%, rgba(0, 100, 80, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 170, 0.2);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonial-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 70% 30%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .testimonial-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .testimonial-logo {
+            color: #00d4aa;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .nav-arrows {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(0, 212, 170, 0.2);
+            border-color: #00d4aa;
+        }
+
+        .testimonial-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-highlight {
+            color: #00d4aa;
+            font-weight: 500;
+        }
+
+        .testimonial-company {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ebay-logo {
+            color: #e53238;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .container {
+                flex-direction: column;
+                padding: 2rem 1rem;
+                gap: 2rem;
+            }
+
+            .form-section h1 {
+                font-size: 2rem;
+            }
+
+            .testimonial-section {
+                padding: 1rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section,
+        .testimonial-section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .testimonial-section {
+            animation-delay: 0.2s;
+        }
+        .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
+        }
+    </style>
 </head>
 <body>
-    <Navbar />
-    <h1>Contact Page</h1>
-    <p>This is the contact page.</p>
-    <p>Feel free to reach out!</p>
+    <!-- Navbar -->
+     <Navbar/>
+    <!-- Main Content -->
+    <section class="bg-gradient-to-br">
+        <div class="container" style="margin-top: 4rem;">
+        <!-- Contact Form Section -->
+        <div class="form-section">
+            <h1>We're here to help</h1>
+            
+            <form id="contactForm">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" placeholder="e.g. John Smith" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" placeholder="e.g. example@gmail.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" name="message" placeholder="Let us know how we can help..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">Send message</button>
+            </form>
+        </div>
+
+        <!-- Testimonial Section -->
+        <!-- <div class="testimonial-section">
+            <div class="testimonial-card">
+                <div class="testimonial-header">
+                    <div class="testimonial-logo">🔗 Arctiq</div>
+                    <div class="nav-arrows">
+                        <div class="nav-arrow">←</div>
+                        <div class="nav-arrow">→</div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-text">
+                    "Arctic <span class="testimonial-highlight">cut project delays by 30%</span> and transformed our global team communication, saving us hours every week."
+                </div>
+                
+                <div class="testimonial-company">
+                    <span class="ebay-logo">ebay</span>
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+    </section>
+    <!-- Footer -->
+    <footer>
+        <Footer/>
+    <script>
+        // Form submission handler
+        const contactForm = document.getElementById('contactForm') as HTMLFormElement | null;
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e: Event) {
+                e.preventDefault();
+                
+                // Get form data
+                const formData = new FormData(e.target as HTMLFormElement);
+                const data = Object.fromEntries(formData);
+                
+                // Simulate form submission
+                const submitBtn = document.querySelector('.submit-btn') as HTMLButtonElement | null;
+                if (submitBtn) {
+                    const originalText = submitBtn.textContent || '';
+                    
+                    submitBtn.textContent = 'Sending...';
+                    submitBtn.disabled = true;
+                    
+                    setTimeout(() => {
+                        alert('Thank you for your message! We\'ll get back to you soon.');
+                        (e.target as HTMLFormElement).reset();
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                    }, 1500);
+                }
+            });
+        }
+
+        // Testimonial navigation (placeholder functionality)
+        document.querySelectorAll('.nav-arrow').forEach(arrow => {
+            arrow.addEventListener('click', function(this: HTMLElement) {
+                // Add animation effect
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+
+        // Add focus effects to form inputs
+        document.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('focus', function(this: HTMLInputElement | HTMLTextAreaElement) {
+                if (this.parentElement) {
+                    this.parentElement.style.transform = 'translateY(-2px)';
+                }
+            });
+            
+            input.addEventListener('blur', function(this: HTMLInputElement | HTMLTextAreaElement) {
+                if (this.parentElement) {
+                    this.parentElement.style.transform = 'translateY(0)';
+                }
+            });
+            });
+    </script>
 </body>
 </html>
