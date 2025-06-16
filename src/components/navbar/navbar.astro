@@ -3,7 +3,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/product?scroll=true', label: 'Product' }, // Add scroll parameter
   { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' }
+  { href: '/contact', label: 'Contact' },
 ];
 ---
 
@@ -75,13 +75,13 @@ const navLinks = [
       ))}
       
       <!-- CTA Button -->
-      <button class="cta-button">
+      <a href="/register" class="cta-button">
         <span class="cta-text">Get Started</span>
         <div class="cta-bg"></div>
         <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
-      </button>
+      </a>                
     </div>
 
     <!-- Enhanced Mobile Menu Button -->
@@ -106,12 +106,13 @@ const navLinks = [
           <div class="mobile-link-arrow">→</div>
         </a>
       ))}
-      <button class="mobile-cta">
-        <span>Get Started</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <a href="/register" class="mobile-cta">
+        <span class="cta-text">Get Started</span>
+        <div class="cta-bg"></div>
+        <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M5 12h14M12 5l7 7-7 7"/>
         </svg>
-      </button>
+      </a>      
     </div>
   </div>
 </div>
