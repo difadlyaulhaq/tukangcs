@@ -1,0 +1,94 @@
+--- 
+import Navbar from '../components/navbar/navbar.astro';
+import Footer from '../components/footer/footer.astro';
+---
+
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - TukangCS</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .dashboard-container {
+        text-align: center;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 1.5rem;
+        padding: 3rem;
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
+        max-width: 500px;
+        margin: 2rem;
+      }
+      
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #8b5cf6, #6366f1);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      p {
+        font-size: 1.2rem;
+        color: #cbd5e1;
+        margin-bottom: 2rem;
+      }
+      
+      .logout-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      
+      .logout-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <Navbar />
+    
+    <div class="dashboard-container">
+      <h1>Halo! 👋</h1>
+      <p>Berhasil login ke TukangCS!</p>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    
+    <Footer />
+    
+    <script>
+      async function logout(): Promise<void> {
+        try {
+          // For now, just redirect to get-started page
+          // Later you can add actual logout API call here
+          window.location.href = '/get-started';
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+      }
+      
+      // Make logout function globally available
+      (window as any).logout = logout;
+    </script>
+  </body>
+</html>
