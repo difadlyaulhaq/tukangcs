@@ -48,11 +48,8 @@ function getFirebaseAdmin() {
     return adminApp;
   } catch (error) {
     console.error("Failed to initialize Firebase Admin:", error);
-    if (error instanceof Error) {
-      throw new Error(`Firebase Admin initialization failed: ${error.message}`);
-    } else {
-      throw new Error("Firebase Admin initialization failed: Unknown error");
-    }
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Firebase Admin initialization failed: ${errorMessage}`);
   }
 }
 const app = getFirebaseAdmin();
