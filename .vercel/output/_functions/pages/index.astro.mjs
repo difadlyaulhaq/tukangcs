@@ -1,0 +1,58 @@
+import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate, e as createAstro } from '../chunks/astro/server_Bbe2uEvn.mjs';
+import 'kleur/colors';
+import { a as $$Footer, $ as $$Navbar } from '../chunks/footer_CBnApD6v.mjs';
+/* empty css                                 */
+export { renderers } from '../renderers.mjs';
+
+const $$HerosectionTwo = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`<html lang="id" data-astro-cid-gbphngna> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TukangCS - AI Customer Service Chatbot</title>${renderHead()}</head> <body data-astro-cid-gbphngna> <!-- First Section - AI Powered Customer Service --> <section class="min-h-screen bg-gradient-to-br py-20 px-6 relative overflow-hidden" data-astro-cid-gbphngna> <!-- Background decorations --> <div class="bg-decoration" style="top: 10%; left: 10%; width: 80px; height: 80px; background: white;" data-astro-cid-gbphngna></div> <div class="bg-decoration" style="top: 70%; right: 15%; width: 60px; height: 60px; background: white; animation-delay: -2s;" data-astro-cid-gbphngna></div> <div class="bg-decoration" style="top: 40%; left: 20%; width: 40px; height: 40px; background: white; animation-delay: -4s;" data-astro-cid-gbphngna></div> <div class="bg-decoration" style="top: 15%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2);" data-astro-cid-gbphngna></div> <div class="bg-decoration" style="bottom: 20%; left: 15%; width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); animation-delay: -3s;" data-astro-cid-gbphngna></div> <!-- Animated stars --> <div class="star star-1" data-astro-cid-gbphngna></div> <div class="star star-2" data-astro-cid-gbphngna></div> <div class="star star-3" data-astro-cid-gbphngna></div> <div class="max-w-6xl mx-auto" data-astro-cid-gbphngna> <!-- Hero Section --> <div class="grid lg-grid-cols-2 gap-12 items-center" data-astro-cid-gbphngna> <!-- Left side - Text --> <div class="reveal-left" data-astro-cid-gbphngna> <h1 class="text-4xl md-text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight" data-astro-cid-gbphngna>
+AI-POWERED CUSTOMER SERVICE CHATBOT
+</h1> <p class="text-xl text-gray-300 mb-8 leading-relaxed" data-astro-cid-gbphngna>
+Transformasi digital untuk layanan pelanggan yang lebih cerdas dan responsif
+</p> <div class="flex flex-col-mobile gap-4" data-astro-cid-gbphngna> <button class="btn-primary" data-astro-cid-gbphngna>
+🚀 Mulai Sekarang
+</button> <button class="btn-secondary" data-astro-cid-gbphngna>
+📖 Pelajari Lebih Lanjut
+</button> </div> </div> <!-- Right side - Character --> <div class="reveal-right relative flex justify-center" data-astro-cid-gbphngna> <div class="character-sitting floating" data-astro-cid-gbphngna> <img src="/images/main-char.png" alt="Customer Service" onerror="this.innerHTML='🤖';" data-astro-cid-gbphngna> </div> </div> </div> <!-- Second Section --> <div style="margin-top: 8rem;" data-astro-cid-gbphngna> <div class="grid lg-grid-cols-2 gap-12 items-center" data-astro-cid-gbphngna> <!-- Left side - Character working --> <div class="reveal-left relative justify-center" data-astro-cid-gbphngna> <div class="relative" data-astro-cid-gbphngna> <!-- Character working dengan gambar laptop-girl.svg --> <div class="character-working floating" style="padding: 20px; display: flex; align-items: center; justify-content: center;" data-astro-cid-gbphngna> <img src="/images/working-girl.png" alt="Working Girl" onerror="this.innerHTML='👩‍💻';" data-astro-cid-gbphngna> </div> </div> </div> <!-- Right side - Text content --> <div class="reveal-right" data-astro-cid-gbphngna> <h2 class="text-4xl md-text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r mb-8 leading-tight" data-astro-cid-gbphngna>
+REVOLUSI LAYANAN PELANGGAN ANDA DENGAN TUKANGCS
+</h2> <p class="text-xl text-white mb-8 leading-relaxed" data-astro-cid-gbphngna>
+Chatbot cerdas yang mengerti bisnis Anda. Otomatis, responsif, dan siap melayani pelanggan 24/7 di semua platform komunikasi.
+</p> <!-- Features list --> <div class="mb-8 space-y-4" data-astro-cid-gbphngna> <div class="checkmark-list reveal-element stagger-1" data-astro-cid-gbphngna> <div class="checkmark" data-astro-cid-gbphngna>✓</div> <span class="text-white" data-astro-cid-gbphngna>Integrasi multi-platform (WhatsApp, Telegram, Website)</span> </div> <div class="checkmark-list reveal-element stagger-2" data-astro-cid-gbphngna> <div class="checkmark" data-astro-cid-gbphngna>✓</div> <span class="text-white" data-astro-cid-gbphngna>AI yang belajar dari bisnis Anda</span> </div> <div class="checkmark-list reveal-element stagger-3" data-astro-cid-gbphngna> <div class="checkmark" data-astro-cid-gbphngna>✓</div> <span class="text-white" data-astro-cid-gbphngna>Dashboard analytics dan laporan real-time</span> </div> </div> <!-- CTA Buttons --> <div class="flex flex-col-mobile gap-4" data-astro-cid-gbphngna> <button class="btn-primary reveal-element stagger-1" data-astro-cid-gbphngna>
+🚀 Lihat Demo
+</button> <button class="btn-secondary reveal-element stagger-2" data-astro-cid-gbphngna>
+📅 Jadwalkan Konsultasi
+</button> </div> </div> </div> </div> <!-- Features Section --> <div style="margin-top: 8rem;" data-astro-cid-gbphngna> <div class="text-center mb-16" data-astro-cid-gbphngna> <div class="reveal-element" data-astro-cid-gbphngna> <h2 class="text-4xl md-text-5xl font-bold text-white mb-8" data-astro-cid-gbphngna>
+Fitur Unggulan TukangCS
+</h2> <p class="text-xl text-gray-300" data-astro-cid-gbphngna>
+Solusi lengkap untuk customer service yang lebih efisien dan profesional
+</p> </div> </div> <div class="grid md-grid-cols-3 gap-8" data-astro-cid-gbphngna> <!-- Feature 1 --> <div class="feature-card reveal-element stagger-1" data-astro-cid-gbphngna> <div class="text-6xl mb-6" data-astro-cid-gbphngna>🤖</div> <h3 class="text-2xl font-bold text-white mb-4" data-astro-cid-gbphngna>AI Cerdas</h3> <p class="text-gray-300" data-astro-cid-gbphngna>Chatbot yang memahami konteks percakapan dan memberikan respon yang relevan</p> </div> <!-- Feature 2 --> <div class="feature-card reveal-element stagger-2" data-astro-cid-gbphngna> <div class="text-6xl mb-6" data-astro-cid-gbphngna>📱</div> <h3 class="text-2xl font-bold text-white mb-4" data-astro-cid-gbphngna>Multi Platform</h3> <p class="text-gray-300" data-astro-cid-gbphngna>Satu dashboard untuk kelola semua channel komunikasi pelanggan</p> </div> <!-- Feature 3 --> <div class="feature-card reveal-element stagger-3" data-astro-cid-gbphngna> <div class="text-6xl mb-6" data-astro-cid-gbphngna>📊</div> <h3 class="text-2xl font-bold text-white mb-4" data-astro-cid-gbphngna>Analytics</h3> <p class="text-gray-300" data-astro-cid-gbphngna>Laporan detail performa customer service dan tingkat kepuasan pelanggan</p> </div> </div> </div> </div> </section> <!-- Second Section - AI Customer Service --> <!-- Footer --> <footer data-astro-cid-gbphngna> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-gbphngna": true })} </footer> ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/components/hero/HerosectionTwo.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
+}, "D:/project/web/tukangcs/absent-accretion/src/components/hero/HerosectionTwo.astro", void 0);
+
+const $$Astro = createAstro();
+const $$Index$1 = createComponent(($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$Index$1;
+  const propsStr = JSON.stringify(Astro2.props);
+  const paramsStr = JSON.stringify(Astro2.params);
+  return renderTemplate`${renderComponent($$result, "vercel-analytics", "vercel-analytics", { "data-props": propsStr, "data-params": paramsStr, "data-pathname": Astro2.url.pathname })} ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/node_modules/@vercel/analytics/dist/astro/index.astro?astro&type=script&index=0&lang.ts")}`;
+}, "D:/project/web/tukangcs/absent-accretion/node_modules/@vercel/analytics/dist/astro/index.astro", void 0);
+
+const $$Index = createComponent(($$result, $$props, $$slots) => {
+  return renderTemplate`<html lang="en"> <head>${renderComponent($$result, "Analytics", $$Index$1, {})}<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>TukangCS</title><!-- Favicon SVG inline --><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8IS0tIEJhY2tncm91bmQgY2lyY2xlIC0tPgogIDxjaXJjbGUgY3g9IjMyIiBjeT0iMzIiIHI9IjMwIiBmaWxsPSIjMjU2M2ViIiBzdHJva2U9IiMxZTQwYWYiIHN0cm9rZS13aWR0aD0iMiIvPgogIAogIDwhLS0gV3JlbmNoIChyZXByZXNlbnRpbmcgIlR1a2FuZyIpIC0tPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0zMCAzMiAzMikiPgogICAgPHJlY3QgeD0iMjAiIHk9IjMwIiB3aWR0aD0iMjQiIGhlaWdodD0iNCIgcng9IjIiIGZpbGw9IiNmZmZmZmYiLz4KICAgIDxjaXJjbGUgY3g9IjQyIiBjeT0iMzIiIHI9IjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZmZmZiIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgICA8Y2lyY2xlIGN4PSI0MiIgY3k9IjMyIiByPSIzIiBmaWxsPSIjZmZmZmZmIi8+CiAgPC9nPgogIAogIDwhLS0gQ29kZSBicmFja2V0cyAocmVwcmVzZW50aW5nICJDUyIpIC0tPgogIDx0ZXh0IHg9IjMyIiB5PSI0NSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSIxMiIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNmYmJmMjQiPgogICAgJmx0Oy8mZ3Q7CiAgPC90ZXh0PgogIAogIDwhLS0gU21hbGwgZ2VhciBhY2NlbnQgLS0+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDUsIDE1KSBzY2FsZSgwLjMpIj4KICAgIDxjaXJjbGUgY3g9IjAiIGN5PSIwIiByPSI4IiBmaWxsPSIjZmJiZjI0Ii8+CiAgICA8Y2lyY2xlIGN4PSIwIiBjeT0iMCIgcj0iNCIgZmlsbD0iIzI1NjNlYiIvPgogICAgPHJlY3QgeD0iLTEiIHk9Ii0xMiIgd2lkdGg9IjIiIGhlaWdodD0iNCIgZmlsbD0iI2ZiYmYyNCIvPgogICAgPHJlY3QgeD0iLTEiIHk9IjgiIHdpZHRoPSIyIiBoZWlnaHQ9IjQiIGZpbGw9IiNmYmJmMjQiLz4KICAgIDxyZWN0IHg9Ii0xMiIgeT0iLTEiIHdpZHRoPSI0IiBoZWlnaHQ9IjIiIGZpbGw9IiNmYmJmMjQiLz4KICAgIDxyZWN0IHg9IjgiIHk9Ii0xIiB3aWR0aD0iNCIgaGVpZ2h0PSIyIiBmaWxsPSIjZmJiZjI0Ii8+CiAgPC9nPgo8L3N2Zz4="><!-- Fallback PNG favicon --><link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVFiFtZdLaBNBGMd/s5tsNjFpbB+2VrQWtVqwIlgQxYOKBy8ePHjQg6AHD4L05MFDwYsHL168eBE8ePDgwYsHL148ePDgwYPgwYsXL148ePDgwYsXL158P2a/nZ1kN5tk4w8+JvPN/P7zfzOzM4sYY/jfS6vV+g9Ag0ajMfA/AFRV/a8AVFXVfw0giqL/GkAURf81gCiK/msAURRFAIiiKP4HgCiKIgBEURQBIIqiCEAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGEoAkAYhiIAhGE4/wDatm3bNm3atm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3btm3b/wfA...">${renderHead()}</head> <body> ${renderComponent($$result, "Navbar", $$Navbar, {})} <div style="margin-top: 2rem;"> <!-- <Herosection client:load /> --> ${renderComponent($$result, "HerosectionTwo", $$HerosectionTwo, {})} <!-- </div style="margin-top: 2rem;">
+      <Product/>
+    <div> --> </div> </body></html>`;
+}, "D:/project/web/tukangcs/absent-accretion/src/pages/index.astro", void 0);
+
+const $$file = "D:/project/web/tukangcs/absent-accretion/src/pages/index.astro";
+const $$url = "";
+
+const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+    __proto__: null,
+    default: $$Index,
+    file: $$file,
+    url: $$url
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const page = () => _page;
+
+export { page };
