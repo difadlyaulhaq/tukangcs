@@ -215,24 +215,11 @@ if (user?.uid) {
       </div>
     </div>
 
-    <script>
-      async function logout() {
-        try {
-          // Clear client-side data
-          localStorage.removeItem('firebase_session');
-          localStorage.removeItem('firebase_user');
-          
-          // Call server-side logout
-          await fetch('/api/auth/signout');
-          
-          // Redirect to signin page
-          window.location.href = '/signin';
-        } catch (error) {
-          console.error('Logout error:', error);
-          // Still redirect even if there's an error
-          window.location.href = '/signin';
-        }
-      }
-    </script>
+  <script>
+function logout() {
+  window.location.href = '/api/auth/signout';
+}
+</script>
+</script>
   </body>
 </html>

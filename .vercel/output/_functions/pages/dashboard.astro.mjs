@@ -27,7 +27,7 @@ Analisis mendalam tentang interaksi pelanggan dan performa bisnis Anda
 Hubungkan WhatsApp, Instagram, Facebook, dan platform lainnya dalam satu dashboard
 </p> </div> <div class="feature-card" data-astro-cid-3nssi2tu> <div class="feature-icon" data-astro-cid-3nssi2tu>⚡</div> <h3 class="feature-title" data-astro-cid-3nssi2tu>Quick Responses <span class="coming-soon" data-astro-cid-3nssi2tu>Coming Soon</span></h3> <p class="feature-description" data-astro-cid-3nssi2tu>
 Template respon cepat untuk pertanyaan yang sering diajukan pelanggan
-</p> </div> </div> </div> ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/pages/dashboard.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
+</p> </div> </div> </div> ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/pages/dashboard.astro?astro&type=script&index=0&lang.ts")} </body> </html> `;
 }, "D:/project/web/tukangcs/absent-accretion/src/pages/dashboard.astro", void 0);
 
 const $$file = "D:/project/web/tukangcs/absent-accretion/src/pages/dashboard.astro";
