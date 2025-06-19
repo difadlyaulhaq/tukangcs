@@ -5,7 +5,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { getAnalytics } from "firebase/analytics";
 
-// Konfigurasi Firebase dari dashboard
+// Konfigurasi Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyD_b0lWXcpnNbSRIt1v9A1jCgCsfXWI6Zw",
   authDomain: "tukang-cs.firebaseapp.com",
@@ -16,11 +16,13 @@ const firebaseConfig = {
   measurementId: "G-WTH48T6G59"
 };
 
-// Init Firebase App
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Services yang digunakan di frontend
+// Export services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = getAnalytics(app);
+
+// Analytics hanya di browser
+export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
