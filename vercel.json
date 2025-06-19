@@ -1,1 +1,7 @@
-{}
+{
+  "buildCommand": "astro build",
+  "outputDirectory": ".vercel/output",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}

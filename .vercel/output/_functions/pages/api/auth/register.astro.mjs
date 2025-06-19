@@ -1,4 +1,4 @@
-import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_CZtLfzeI.mjs';
+import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_VpHvryV6.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const prerender = false;
