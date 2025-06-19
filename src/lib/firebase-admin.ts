@@ -1,101 +1,53 @@
 // src/lib/firebase-admin.ts
-import { initializeApp, cert, getApps, getApp, type App } from "firebase-admin/app";
-import { getAuth, type Auth } from "firebase-admin/auth";
-import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { initializeApp, cert, getApps, getApp } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore } from "firebase-admin/firestore";
 
-// Singleton pattern for serverless environments
-let adminApp: App | null = null;
+// Singleton untuk serverless environment
+let app: any = null;
 
-function getFirebaseAdmin() {
-  if (adminApp) {
-    return adminApp;
+function initFirebaseAdmin() {
+  // Kalau sudah ada app, return aja
+  if (app) return app;
+  
+  // Cek kalau sudah diinit sebelumnya
+  if (getApps().length > 0) {
+    app = getApp();
+    return app;
   }
 
-  // Check if already initialized
-  const existingApps = getApps();
-  if (existingApps.length > 0) {
-    adminApp = getApp();
-    return adminApp;
-  }
+  // Ambil environment variables
+  const serviceAccount = {
+    type: "service_account",
+    project_id: import.meta.env.FIREBASE_PROJECT_ID,
+    private_key_id: import.meta.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: import.meta.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    client_email: import.meta.env.FIREBASE_CLIENT_EMAIL,
+    client_id: import.meta.env.FIREBASE_CLIENT_ID || "",
+    auth_uri: "https://accounts.google.com/o/oauth2/auth",
+    token_uri: "https://oauth2.googleapis.com/token",
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+  };
 
-  // Get Firebase credentials from environment variables
-  const projectId = import.meta.env.FIREBASE_PROJECT_ID;
-  const clientEmail = import.meta.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = import.meta.env.FIREBASE_PRIVATE_KEY;
-  const privateKeyId = import.meta.env.FIREBASE_PRIVATE_KEY_ID;
-
-  // Debug logging for deployment
-  console.log('Firebase Admin initialization:', {
-    projectId: projectId ? '✓' : '✗',
-    clientEmail: clientEmail ? '✓' : '✗',
-    privateKey: privateKey ? `✓ (${privateKey.substring(0, 50)}...)` : '✗',
-    privateKeyId: privateKeyId ? '✓' : '✗'
-  });
-
-  // Validate required environment variables
-  if (!projectId || !clientEmail || !privateKey) {
-    const error = new Error(
-      'Missing required Firebase environment variables:\n' +
-      `FIREBASE_PROJECT_ID: ${projectId ? '✓' : '✗'}\n` +
-      `FIREBASE_CLIENT_EMAIL: ${clientEmail ? '✓' : '✗'}\n` +
-      `FIREBASE_PRIVATE_KEY: ${privateKey ? '✓' : '✗'}`
-    );
-    console.error('Firebase Admin configuration error:', error);
-    throw error;
+  // Validasi environment variables
+  if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+    throw new Error('Firebase Admin: Environment variables tidak lengkap');
   }
 
   try {
-    // Clean up private key - handle different formats
-    let cleanPrivateKey = privateKey;
-    
-    // Remove quotes if present
-    if (cleanPrivateKey.startsWith('"') && cleanPrivateKey.endsWith('"')) {
-      cleanPrivateKey = cleanPrivateKey.slice(1, -1);
-    }
-    
-    // Replace escaped newlines with actual newlines
-    cleanPrivateKey = cleanPrivateKey.replace(/\\n/g, '\n');
-
-    // Create Firebase Admin configuration
-    const firebaseConfig = {
-      type: "service_account",
-      project_id: projectId,
-      private_key_id: privateKeyId,
-      private_key: cleanPrivateKey,
-      client_email: clientEmail,
-      client_id: import.meta.env.FIREBASE_CLIENT_ID || "",
-      auth_uri: "https://accounts.google.com/o/oauth2/auth",
-      token_uri: "https://oauth2.googleapis.com/token",
-      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-      client_x509_cert_url: import.meta.env.FIREBASE_CLIENT_CERT_URL || ""
-    };
-
-    adminApp = initializeApp({
-      credential: cert(firebaseConfig as any),
-      projectId: projectId,
+    app = initializeApp({
+      credential: cert(serviceAccount as any),
+      projectId: serviceAccount.project_id,
     });
-
-    console.log('Firebase Admin initialized successfully for project:', projectId);
-    return adminApp;
-
+    
+    console.log('Firebase Admin berhasil diinisialisasi');
+    return app;
   } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Firebase Admin initialization failed: ${errorMessage}`);
+    console.error('Error Firebase Admin:', error);
+    throw error;
   }
 }
 
-// Export getter functions for lazy initialization
-export function getAdminAuth(): Auth {
-  const app = getFirebaseAdmin();
-  return getAuth(app);
-}
-
-export function getAdminDb(): Firestore {
-  const app = getFirebaseAdmin();
-  return getFirestore(app);
-}
-
-// For backward compatibility, export instances
-export const adminAuth = getAdminAuth();
-export const adminDb = getAdminDb();
+// Export services
+export const adminAuth = getAuth(initFirebaseAdmin());
+export const adminDb = getFirestore(initFirebaseAdmin());
