@@ -4,6 +4,12 @@
     "jsx": "preserve",
     "jsxImportSource": "astro",
     "allowJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    
+    // ✅ Tambahkan ini:
+    "baseUrl": ".",
+    "paths": {
+      "@firebase/*": ["src/firebase/*"]
+    }
   }
 }

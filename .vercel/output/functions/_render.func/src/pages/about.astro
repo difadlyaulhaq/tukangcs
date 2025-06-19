@@ -1,0 +1,650 @@
+---
+import Navbar from '../components/navbar/navbar.astro';
+import Footer from '../components/footer/footer.astro';
+---
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TukangCS - About Us</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes fadeInScale {
+            from { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Reveal animations */
+        .reveal-element, .reveal-left, .reveal-right {
+            opacity: 0;
+            transition: all 0.8s ease;
+        }
+
+        .reveal-left.visible {
+            animation: slideInLeft 0.8s ease forwards;
+        }
+
+        .reveal-right.visible {
+            animation: slideInRight 0.8s ease forwards;
+        }
+
+        .reveal-element.visible {
+            animation: slideInUp 0.8s ease forwards;
+        }
+
+        .fade-scale.visible {
+            animation: fadeInScale 0.8s ease forwards;
+        }
+
+        .stagger-1 { animation-delay: 0.2s; }
+        .stagger-2 { animation-delay: 0.4s; }
+        .stagger-3 { animation-delay: 0.6s; }
+        .stagger-4 { animation-delay: 0.8s; }
+
+        /* Background gradients */
+        .bg-gradient-to-br {
+            background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
+        }
+
+        .bg-gradient-to-r {
+            background: linear-gradient(to right, #9333ea, #2563eb);
+        }
+
+        /* Glass effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+        }
+
+        /* Utility classes */
+        .min-h-screen { min-height: 100vh; }
+        .py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+        .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .overflow-hidden { overflow: hidden; }
+        .max-w-6xl { max-width: 72rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .text-center { text-align: center; }
+        .flex { display: flex; }
+        .justify-center { justify-content: center; }
+        .items-center { align-items: center; }
+        .gap-12 { gap: 3rem; }
+        .gap-8 { gap: 2rem; }
+        .gap-6 { gap: 1.5rem; }
+        .gap-4 { gap: 1rem; }
+        .mb-16 { margin-bottom: 4rem; }
+        .mb-12 { margin-bottom: 3rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-16 { margin-top: 4rem; }
+        .mt-8 { margin-top: 2rem; }
+
+        /* Grid system */
+        .grid { display: grid; }
+        .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+        /* Typography */
+        .text-5xl { font-size: 3rem; line-height: 1; }
+        .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+        .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+        .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+        .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+        .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+        .text-base { font-size: 1rem; line-height: 1.5rem; }
+        .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+        .font-bold { font-weight: 700; }
+        .font-black { font-weight: 900; }
+        .font-semibold { font-weight: 600; }
+        .leading-tight { line-height: 1.25; }
+        .leading-relaxed { line-height: 1.625; }
+
+        /* Colors */
+        .text-white { color: white; }
+        .text-gray-300 { color: #d1d5db; }
+        .text-gray-200 { color: #e5e7eb; }
+        .text-purple-200 { color: #ddd6fe; }
+        .text-blue-300 { color: #93c5fd; }
+        .text-transparent { color: transparent; }
+        .bg-clip-text {
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        /* About hero section */
+        .about-hero {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 4rem;
+        }
+
+        /* Team member card */
+        .team-member {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .team-member:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .team-avatar {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .team-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        /* Stats section */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Background decorations */
+        .bg-decoration {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        /* Animated stars */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .star-1 {
+            top: 15%;
+            left: 10%;
+            width: 8px;
+            height: 8px;
+        }
+
+        .star-2 {
+            top: 25%;
+            right: 15%;
+            width: 6px;
+            height: 6px;
+            animation-delay: -1s;
+        }
+
+        .star-3 {
+            bottom: 30%;
+            left: 20%;
+            width: 4px;
+            height: 4px;
+            animation-delay: -2s;
+        }
+
+        .star-4 {
+            top: 60%;
+            right: 25%;
+            width: 5px;
+            height: 5px;
+            animation-delay: -1.5s;
+        }
+
+        /* Values section */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .value-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            padding: 2rem;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .value-item:nth-child(1) { border-left-color: #667eea; }
+        .value-item:nth-child(2) { border-left-color: #FF6B6B; }
+        .value-item:nth-child(3) { border-left-color: #4ECDC4; }
+
+        .value-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(10px);
+        }
+
+        .value-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .px-6 {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            
+            .py-20 {
+                padding-top: 3rem;
+                padding-bottom: 3rem;
+            }
+            
+            .text-5xl {
+                font-size: 2rem;
+            }
+            
+            .text-4xl {
+                font-size: 1.75rem;
+            }
+            
+            .about-hero {
+                padding: 2rem;
+            }
+            
+            .team-member {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <Navbar />
+    <!-- About Section -->
+    <section class="min-h-screen bg-gradient-to-br py-20 px-6 relative overflow-hidden">
+        <!-- Background decorations -->
+        <div class="bg-decoration" style="top: 10%; left: 10%; width: 80px; height: 80px; background: white;"></div>
+        <div class="bg-decoration" style="top: 70%; right: 15%; width: 60px; height: 60px; background: white; animation-delay: -2s;"></div>
+        <div class="bg-decoration" style="top: 40%; left: 20%; width: 40px; height: 40px; background: white; animation-delay: -4s;"></div>
+        <div class="bg-decoration" style="top: 15%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+        <div class="bg-decoration" style="bottom: 20%; left: 15%; width: 80px; height: 80px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); animation-delay: -3s;"></div>
+        
+        <!-- Animated stars -->
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        <div class="star star-4"></div>
+
+        <div class="max-w-6xl mx-auto" style="margin-top: 4rem;">
+            <!-- Page Header -->
+            <div class="text-center mb-16">
+                <div class="reveal-element">
+                    <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r mb-6 leading-tight">
+                        ABOUT US
+                    </h1>
+                    <p class="text-xl text-gray-300 leading-relaxed">
+                        Kami Adalah Memberdayakan Bisnis Anda<br>
+                        Melalui Layanan Pelanggan Cerdas
+                    </p>
+                </div>
+            </div>
+
+            <!-- About Hero -->
+            <div class="about-hero reveal-element">
+                <div class="flex items-center gap-8 mb-8">
+                    <div class="text-6xl">🤝</div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-2">Visi Kami</h2>
+                        <p class="text-lg text-gray-200">
+                            Menjadi pionir dalam transformasi digital customer service di Indonesia
+                        </p>
+                    </div>
+                </div>
+                <p class="text-lg text-gray-300 leading-relaxed">
+                    TukangCS hadir untuk membantu bisnis Indonesia mengoptimalkan layanan pelanggan 
+                    melalui teknologi AI yang canggih namun mudah digunakan. Kami percaya bahwa setiap 
+                    bisnis, dari UMKM hingga enterprise, berhak mendapatkan tools berkualitas tinggi 
+                    untuk memberikan pengalaman pelanggan yang luar biasa.
+                </p>
+            </div>
+
+            <!-- Mission Section -->
+            <div class="reveal-element mb-16">
+                <h2 class="text-3xl font-bold text-white mb-8 text-center">
+                    CS AI Generasi Baru: Efisien, Personal, Terintegrasi
+                </h2>
+                <div class="glass-effect p-8 text-center">
+                    <p class="text-lg text-gray-200 leading-relaxed">
+                        Kami hadirkan solusi customer service AI pintar yang adaptif dan terintegrasi, 
+                        memberdayakan tim layanan pelanggan yang lebih efisien dan personal. 
+                        Dengan teknologi terdepan, kami menghadirkan pengalaman pelanggan yang 
+                        seamless di berbagai platform komunikasi.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats Section -->
+            <div class="stats-grid reveal-element mb-16">
+                <div class="stat-item fade-scale stagger-1">
+                    <div class="stat-number">500+</div>
+                    <div class="text-white font-semibold">Bisnis Terlayani</div>
+                    <div class="text-gray-300 text-sm">di seluruh Indonesia</div>
+                </div>
+                <div class="stat-item fade-scale stagger-2">
+                    <div class="stat-number">1M+</div>
+                    <div class="text-white font-semibold">Pesan Diproses</div>
+                    <div class="text-gray-300 text-sm">setiap bulannya</div>
+                </div>
+                <div class="stat-item fade-scale stagger-3">
+                    <div class="stat-number">99.9%</div>
+                    <div class="text-white font-semibold">Uptime</div>
+                    <div class="text-gray-300 text-sm">reliability terjamin</div>
+                </div>
+                <div class="stat-item fade-scale stagger-4">
+                    <div class="stat-number">24/7</div>
+                    <div class="text-white font-semibold">Support</div>
+                    <div class="text-gray-300 text-sm">tim selalu siap membantu</div>
+                </div>
+            </div>
+
+            <!-- Our Team Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <div class="reveal-element">
+                        <h2 class="text-3xl font-bold text-white mb-6">Our Team</h2>
+                        <p class="text-lg text-gray-300">
+                            Tim berpengalaman yang berdedikasi untuk kesuksesan Anda
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-8">
+                    <!-- Team Member 1 -->
+                    <div class="team-member reveal-left">
+                        <div class="team-avatar">
+                            <img  src="/images/difa-founder.png" alt="">
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Difa Diyaul Haq</h3>
+                        <p class="text-blue-300 font-semibold mb-2">Founder</p>
+                        <!-- <p class="text-sm text-gray-300 mb-4">22.01.2024</p> -->
+                        <p class="text-gray-200 text-sm leading-relaxed">
+                            Visioner muda di balik TukangCS, dengan latar belakang kuat di bidang teknologi dan machine learning. 
+                            Aktif mengembangkan solusi digital sejak masa kuliah, saya membangun TukangCS untuk menjawab kebutuhan customer service yang cepat, personal, 
+                            dan efisien—khususnya bagi UMKM dan bisnis digital di Indonesia.
+                        </p>
+                    </div>
+
+                    <!-- Team Member 2 -->
+                    <div class="team-member reveal-right">
+                        <div class="team-avatar">
+                            <img  src="/images/isaac-co-founder.png" alt="">
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2">Bonaventura Isaac Guric</h3>
+                        <p class="text-blue-300 font-semibold mb-2">Co-Founder</p>
+                        <!-- <p class="text-sm text-gray-300 mb-4">22.01.2024</p> -->
+                        <p class="text-gray-200 text-sm leading-relaxed">
+                            Tech lead dengan expertise dalam AI/ML dan system architecture. 
+                            Bertanggung jawab memastikan platform TukangCS selalu menggunakan 
+                            teknologi terdepan dan reliable.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Our Values Section -->
+            <div class="mb-16">
+                <div class="text-center mb-12">
+                    <div class="reveal-element">
+                        <h2 class="text-3xl font-bold text-white mb-6">Nilai-Nilai Kami</h2>
+                        <p class="text-lg text-gray-300">
+                            Prinsip yang memandu setiap langkah kami
+                        </p>
+                    </div>
+                </div>
+
+                <div class="values-grid">
+                    <div class="value-item reveal-element stagger-1">
+                        <div class="value-icon">🚀</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Inovasi Berkelanjutan</h3>
+                        <p class="text-gray-200">
+                            Kami selalu mengembangkan teknologi terbaru untuk memberikan 
+                            solusi yang lebih baik dan efisien bagi pelanggan.
+                        </p>
+                    </div>
+
+                    <div class="value-item reveal-element stagger-2">
+                        <div class="value-icon">🤝</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Customer First</h3>
+                        <p class="text-gray-200">
+                            Kepuasan dan kesuksesan pelanggan adalah prioritas utama dalam 
+                            setiap keputusan dan pengembangan produk kami.
+                        </p>
+                    </div>
+
+                    <div class="value-item reveal-element stagger-3">
+                        <div class="value-icon">💎</div>
+                        <h3 class="text-xl font-bold text-white mb-3">Kualitas Terjamin</h3>
+                        <p class="text-gray-200">
+                            Kami berkomitmen memberikan produk dan layanan berkualitas tinggi 
+                            dengan standar enterprise untuk semua segmen bisnis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CTA Section -->
+            <div class="text-center">
+                <div class="reveal-element">
+                    <h2 class="text-3xl font-bold text-white mb-6">
+                        Siap Bergabung dengan Kami?
+                    </h2>
+                    <p class="text-lg text-gray-300 mb-8">
+                        Mari bersama-sama menghadirkan customer experience terbaik untuk bisnis Anda
+                    </p>
+                    <button class="btn-primary">
+                        🚀 Mulai Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+     <footer>
+        <Footer />
+     </footer>
+
+    <script>
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all reveal elements
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealElements = document.querySelectorAll('.reveal-element, .reveal-left, .reveal-right, .fade-scale');
+            revealElements.forEach(el => observer.observe(el));
+        });
+
+        // Enhanced button interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                // Add ripple effect
+                const ripple = document.createElement('span');
+                const rect = button.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = `
+                    position: absolute;
+                    width: ${size}px;
+                    height: ${size}px;
+                    left: ${x}px;
+                    top: ${y}px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                `;
+                
+                button.style.position = 'relative';
+                button.style.overflow = 'hidden';
+                button.appendChild(ripple);
+                
+                setTimeout(() => ripple.remove(), 600);
+                
+                alert('🎉 Terima kasih atas minat Anda! Tim kami akan segera menghubungi Anda.');
+            });
+        });
+
+        // Parallax effect for background elements
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.bg-decoration');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.1);
+                (element as HTMLElement).style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+
+        // Add ripple animation CSS
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
