@@ -2,9 +2,6 @@
 	"version": 3,
 	"routes": [
 		{
-			"handle": "filesystem"
-		},
-		{
 			"src": "^/_astro/(.*)$",
 			"headers": {
 				"cache-control": "public, max-age=31536000, immutable"
@@ -12,59 +9,62 @@
 			"continue": true
 		},
 		{
-			"src": "^/_server-islands/([^/]+?)/?$",
+			"handle": "filesystem"
+		},
+		{
+			"src": "^\\/_server-islands\\/([^/]+?)\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/_image/?$",
+			"src": "^\\/_image\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/about/?$",
+			"src": "^\\/about\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/api/auth/login/?$",
+			"src": "^\\/api\\/auth\\/login\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/api/auth/register/?$",
+			"src": "^\\/api\\/auth\\/register\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/api/auth/signout/?$",
+			"src": "^\\/api\\/auth\\/signout\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/api/test-env/?$",
+			"src": "^\\/api\\/test-env\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/contact/?$",
+			"src": "^\\/contact\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/dashboard/?$",
+			"src": "^\\/dashboard\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/get-started/?$",
+			"src": "^\\/get-started\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/login/?$",
+			"src": "^\\/login\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/product/?$",
+			"src": "^\\/product\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/register/?$",
+			"src": "^\\/register\\/?$",
 			"dest": "_render"
 		},
 		{
-			"src": "^/$",
+			"src": "^\\/$",
 			"dest": "_render"
 		}
 	]

@@ -52,8 +52,15 @@ function getFirebaseAdmin() {
     throw new Error(`Firebase Admin initialization failed: ${errorMessage}`);
   }
 }
-const app = getFirebaseAdmin();
-const adminAuth = getAuth(app);
-const adminDb = getFirestore(app);
+function getAdminAuth() {
+  const app = getFirebaseAdmin();
+  return getAuth(app);
+}
+function getAdminDb() {
+  const app = getFirebaseAdmin();
+  return getFirestore(app);
+}
+const adminAuth = getAdminAuth();
+const adminDb = getAdminDb();
 
 export { adminAuth as a, adminDb as b };
