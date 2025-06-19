@@ -5,6 +5,12 @@ import { adminAuth, adminDb } from "../../../lib/firebase-admin"; // Fixed path 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
+  console.log('Login API called at:', new Date().toISOString());
+  console.log('Environment check:', {
+    NODE_ENV: import.meta.env.NODE_ENV,
+    FIREBASE_PROJECT_ID: import.meta.env.FIREBASE_PROJECT_ID ? '✓' : '✗'
+  });
+  
   try {
     const body = await request.json();
     const { email, password } = body;

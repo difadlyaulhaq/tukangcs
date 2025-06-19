@@ -1,7 +1,7 @@
 import { c as createComponent, e as createAstro, r as renderHead, b as renderScript, d as renderTemplate } from '../chunks/astro/server_Bbe2uEvn.mjs';
 import 'kleur/colors';
 import 'clsx';
-import { b as adminDb } from '../chunks/firebase-admin_C9s_l3C9.mjs';
+import { b as adminDb } from '../chunks/firebase-admin_DsrFsXfx.mjs';
 /* empty css                                     */
 export { renderers } from '../renderers.mjs';
 
