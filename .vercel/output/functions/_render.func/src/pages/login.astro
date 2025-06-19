@@ -1,0 +1,32 @@
+---
+import Navbar from '../components/navbar/navbar.astro';
+import Footer from '../components/footer/footer.astro';
+import LoginStyle from '../components/styles/LoginStyle.astro';
+import LoginScript from '../components/scripts/LoginScript.astro';
+---
+
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - TukangCS</title>
+    <LoginStyle />
+  </head>
+  <body>
+    <Navbar />
+
+    <div class="container">
+      <h1>Login</h1>
+      <form id="login-form">
+        <div id="message"></div>
+        <input type="email" name="email" placeholder="Gmail" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit" id="submit-btn">Masuk</button>
+      </form>
+      <p class="note">Belum punya akun? <a href="/register">Daftar di sini</a></p>
+    </div>
+
+    <Footer />
+    <LoginScript />
+  </body>
+</html>

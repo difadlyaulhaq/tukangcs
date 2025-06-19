@@ -1,0 +1,155 @@
+//components/scripts/LoginScript.astro
+<script is:inline type="module">
+  function showTab(tab) {
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const loginMessage = document.getElementById('login-message');
+    const registerMessage = document.getElementById('register-message');
+
+    if (!tabLogin || !tabRegister || !formLogin || !formRegister) return;
+
+    // Clear messages
+    if (loginMessage) loginMessage.innerHTML = '';
+    if (registerMessage) registerMessage.innerHTML = '';
+
+    if (tab === 'login') {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      formLogin.classList.remove('hidden');
+      formRegister.classList.add('hidden');
+    } else {
+      tabLogin.classList.remove('active');
+      tabRegister.classList.add('active');
+      formLogin.classList.add('hidden');
+      formRegister.classList.remove('hidden');
+    }
+  }
+
+  function showMessage(elementId, message, type) {
+    const div = document.getElementById(elementId);
+    if (!div) return;
+    div.innerHTML = `<div class="message ${type}">${message}</div>`;
+  }
+
+  function showLoading(buttonId, isLoading, originalText) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    button.disabled = isLoading;
+    button.innerHTML = isLoading ? `<span class="loading"></span> ${originalText}...` : originalText;
+  }
+
+  // Login form logic
+  document.getElementById('form-login')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const email = form.get('email')?.toString().trim();
+    const password = form.get('password')?.toString().trim();
+
+    if (!email || !password) {
+      showMessage('login-message', 'Email dan password wajib diisi.', 'error');
+      return;
+    }
+
+    showLoading('login-btn', true, 'Masuk');
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // Store session data in localStorage for client-side access
+        localStorage.setItem('firebase_session', JSON.stringify(data.session));
+        localStorage.setItem('firebase_user', JSON.stringify(data.user));
+        
+        showMessage('login-message', 'Login berhasil, mengalihkan...', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1000);
+      } else {
+        showMessage('login-message', data.error || 'Login gagal', 'error');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      showMessage('login-message', 'Gagal login, cek koneksi Anda.', 'error');
+    } finally {
+      showLoading('login-btn', false, 'Masuk');
+    }
+  });
+
+  // Register form logic
+  document.getElementById('form-register')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const email = form.get('email')?.toString().trim();
+    const password = form.get('password')?.toString().trim();
+    const nama_umkm = form.get('nama_umkm')?.toString().trim();
+    const sektor = form.get('sektor')?.toString().trim();
+    const sosmedSelect = document.getElementById('sosmed');
+    const sosmed = sosmedSelect ? Array.from(sosmedSelect.selectedOptions).map(o => o.value) : [];
+
+    if (!email || !password || !nama_umkm || !sektor) {
+      showMessage('register-message', 'Semua field wajib diisi.', 'error');
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage('register-message', 'Password minimal 6 karakter.', 'error');
+      return;
+    }
+
+    showLoading('register-btn', true, 'Daftar Sekarang');
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, nama_umkm, sektor, sosmed }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        showMessage('register-message', data.message, 'success');
+        setTimeout(() => {
+          showTab('login');
+          e.target.reset();
+        }, 2000);
+      } else {
+        showMessage('register-message', data.error || 'Gagal registrasi', 'error');
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+      showMessage('register-message', 'Gagal registrasi, coba lagi.', 'error');
+    } finally {
+      showLoading('register-btn', false, 'Daftar Sekarang');
+    }
+  });
+
+  // Make showTab available globally
+  window.showTab = showTab;
+
+  // Session check - redirect if already logged in
+  document.addEventListener('DOMContentLoaded', () => {
+    const session = localStorage.getItem('firebase_session');
+    if (session) {
+      try {
+        const parsed = JSON.parse(session);
+        // Check if session is still valid
+        if (parsed.expires_at && parsed.expires_at * 1000 > Date.now()) {
+          window.location.href = '/dashboard';
+        } else {
+          // Session expired, clean up
+          localStorage.removeItem('firebase_session');
+          localStorage.removeItem('firebase_user');
+        }
+      } catch (error) {
+        // Invalid session data, clean up
+        localStorage.removeItem('firebase_session');
+        localStorage.removeItem('firebase_user');
+      }
+    }
+  });
+</script>

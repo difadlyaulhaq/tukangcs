@@ -1,176 +1,56 @@
 ---
 import Navbar from '../components/navbar/navbar.astro';
 import Footer from '../components/footer/footer.astro';
+import GetStartedScript from '../components/scripts/GetStartedScript.astro'; // ✅ Pisahkan script
+import GetStartedStyle from '../components/styles/GetStartedStyle.astro'; // ✅ Pisahkan style
 ---
 
-<!DOCTYPE html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Get Started - TukangCS</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to bottom right, #111827, #581c87, #1e3a8a);
-      color: white;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Get Started - TukangCS</title>
+    <GetStartedStyle />
+  </head>
+  <body>
+    <Navbar />
 
-    .container {
-      max-width: 600px;
-      margin: 6rem auto;
-      padding: 2rem;
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1.5rem;
-      box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
-    }
+    <div class="container">
+      <h1>Get Started</h1>
+      <div class="tabs">
+        <button class="tab active" id="tab-login" onclick="showTab('login')">Login</button>
+        <button class="tab" id="tab-register" onclick="showTab('register')">Register</button>
+      </div>
 
-    h1 {
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 1rem;
-      background: linear-gradient(135deg, #8b5cf6, #6366f1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+      <!-- Login Form -->
+      <form id="form-login">
+        <div id="login-message"></div>
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password" required />
+        <button type="submit" id="login-btn">Masuk</button>
+        <p class="note">Belum punya akun? Klik tab Register di atas</p>
+      </form>
 
-    .tabs {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-
-    .tab {
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      background: transparent;
-      border: none;
-      font-weight: bold;
-      color: #cbd5e1;
-      border-bottom: 2px solid transparent;
-      transition: all 0.3s ease;
-    }
-
-    .tab.active {
-      color: white;
-      border-color: #8b5cf6;
-    }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    input, select {
-      padding: 0.75rem 1rem;
-      border-radius: 0.75rem;
-      border: none;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #8b5cf6;
-      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.5);
-    }
-
-    button {
-      padding: 0.75rem 1rem;
-      font-weight: bold;
-      border: none;
-      border-radius: 0.75rem;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: white;
-      cursor: pointer;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
-    }
-
-    .note {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #94a3b8;
-    }
-
-    .hidden { display: none; }
-  </style>
-</head>
-<body>
-  <Navbar />
-
-  <div class="container">
-    <h1>Get Started</h1>
-
-    <div class="tabs">
-      <button class="tab active" id="tab-login" onclick="showTab('login')">Login</button>
-      <button class="tab" id="tab-register" onclick="showTab('register')">Register</button>
+      <!-- Register Form -->
+      <form id="form-register" class="hidden">
+        <div id="register-message"></div>
+        <input type="text" name="nama_umkm" placeholder="Nama Perusahaan / UMKM" required />
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Password (minimal 6 karakter)" required minlength="6" />
+        <input type="text" name="sektor" placeholder="Sektor Usaha (contoh: F&B, Fashion, etc.)" required />
+        <label for="sosmed">Platform Sosial Media yang Ingin Dihubungkan (opsional):</label>
+        <select id="sosmed" name="sosmed" multiple size="4">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="telegram">Telegram</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+        </select>
+        <button type="submit" id="register-btn">Daftar Sekarang</button>
+        <p class="note">Sudah punya akun? Klik tab Login di atas</p>
+      </form>
     </div>
 
-    <!-- Login Form -->
-    <form id="form-login">
-      <input type="email" name="email" placeholder="Gmail" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Masuk</button>
-      <p class="note">Belum punya akun? Klik tab Register di atas</p>
-    </form>
-
-    <!-- Register Form -->
-    <form id="form-register" class="hidden">
-      <input type="text" name="nama_umkm" placeholder="Nama Perusahaan / UMKM" required />
-      <input type="email" name="email" placeholder="Gmail" required />
-      <input type="password" name="password" placeholder="Password" required />
-      <input type="text" name="sektor" placeholder="Sektor Usaha" required />
-      <label for="sosmed">Platform Sosial Media yang Ingin Dihubungkan:</label>
-      <select id="sosmed" name="sosmed[]" multiple size="4">
-        <option value="whatsapp">WhatsApp</option>
-        <option value="telegram">Telegram</option>
-        <option value="instagram">Instagram</option>
-        <option value="facebook">Facebook</option>
-      </select>
-      <button type="submit">Daftar Sekarang</button>
-    </form>
-  </div>
-
-  <Footer />
-
-  <script>
-    function showTab(tab: 'login' | 'register') {
-      const tabLogin = document.getElementById('tab-login');
-      const tabRegister = document.getElementById('tab-register');
-      const formLogin = document.getElementById('form-login');
-      const formRegister = document.getElementById('form-register');
-
-      if (!tabLogin || !tabRegister || !formLogin || !formRegister) return;
-
-      if (tab === 'login') {
-        tabLogin.classList.add('active');
-        tabRegister.classList.remove('active');
-        formLogin.classList.remove('hidden');
-        formRegister.classList.add('hidden');
-      } else {
-        tabLogin.classList.remove('active');
-        tabRegister.classList.add('active');
-        formLogin.classList.add('hidden');
-        formRegister.classList.remove('hidden');
-      }
-    }
-  </script>
-</body>
+    <Footer />
+    <GetStartedScript />
+  </body>
 </html>

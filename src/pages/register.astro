@@ -1,8 +1,3 @@
----
-import Navbar from '../components/navbar/navbar.astro';
-import Footer from '../components/footer/footer.astro';
----
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -81,6 +76,12 @@ import Footer from '../components/footer/footer.astro';
       box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
     }
 
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
     .note {
       text-align: center;
       font-size: 0.9rem;
@@ -92,30 +93,197 @@ import Footer from '../components/footer/footer.astro';
       color: #8b5cf6;
       text-decoration: underline;
     }
+
+    .message {
+      padding: 0.75rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .success {
+      background: rgba(34, 197, 94, 0.2);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+
+    .error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    select[multiple] {
+      height: auto;
+      min-height: 100px;
+    }
+
+    select option {
+      background: #1e293b;
+      color: white;
+      padding: 0.5rem;
+    }
+
+    label {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
   </style>
 </head>
 <body>
-  <Navbar />
-
   <div class="container">
     <h1>Daftar Akun</h1>
-    <form method="POST" action="/api/register">
+    <form id="register-form">
+      <div id="message"></div>
       <input type="text" name="nama_umkm" placeholder="Nama Perusahaan / UMKM" required />
       <input type="email" name="email" placeholder="Gmail" required />
-      <input type="password" name="password" placeholder="Password" required />
+      <input type="password" name="password" placeholder="Password" minlength="6" required />
       <input type="text" name="sektor" placeholder="Sektor Usaha" required />
-      <label for="sosmed">Platform Sosial Media yang Ingin Dihubungkan:</label>
-      <select id="sosmed" name="sosmed[]" multiple size="4">
-        <option value="whatsapp">WhatsApp</option>
-        <option value="telegram">Telegram</option>
-        <option value="instagram">Instagram</option>
-        <option value="facebook">Facebook</option>
-      </select>
-      <button type="submit">Daftar Sekarang</button>
+      
+      <div class="form-group">
+        <label for="sosmed">Platform Sosial Media yang Ingin Dihubungkan:</label>
+        <select id="sosmed" name="sosmed" multiple size="4">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="telegram">Telegram</option>
+          <option value="instagram">Instagram</option>
+          <option value="facebook">Facebook</option>
+        </select>
+        <small style="color: #94a3b8; font-size: 0.8rem;">Tekan Ctrl/Cmd untuk memilih beberapa platform</small>
+      </div>
+      
+      <button type="submit" id="submit-btn">Daftar Sekarang</button>
     </form>
     <p class="note">Sudah punya akun? <a href="/login">Masuk di sini</a></p>
   </div>
 
-  <Footer />
+  <script>
+    function showMessage(message: string, type: 'success' | 'error') {
+      const messageDiv = document.getElementById('message');
+      if (messageDiv) {
+        messageDiv.innerHTML = `<div class="message ${type}">${message}</div>`;
+        
+        // Auto-hide success messages after 3 seconds
+        if (type === 'success') {
+          setTimeout(() => {
+            messageDiv.innerHTML = '';
+          }, 3000);
+        }
+      }
+    }
+
+    function validateForm(formData: FormData): boolean {
+      const email = formData.get('email') as string;
+      const password = formData.get('password') as string;
+      const nama_umkm = formData.get('nama_umkm') as string;
+      const sektor = formData.get('sektor') as string;
+
+      if (!email || !password || !nama_umkm || !sektor) {
+        showMessage('Semua field wajib diisi!', 'error');
+        return false;
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showMessage('Format email tidak valid!', 'error');
+        return false;
+      }
+
+      // Password length validation
+      if (password.length < 6) {
+        showMessage('Password minimal 6 karakter!', 'error');
+        return false;
+      }
+
+      return true;
+    }
+
+    const registerForm = document.getElementById('register-form') as HTMLFormElement | null;
+    registerForm?.addEventListener('submit', async (e: SubmitEvent) => {
+      e.preventDefault();
+      
+      const submitBtn = document.getElementById('submit-btn');
+      const formData = new FormData(e.target as HTMLFormElement);
+      
+      // Validate form before submission
+      if (!validateForm(formData)) {
+        return;
+      }
+      
+      // Handle multiple select values
+      const sosmedSelect = document.getElementById('sosmed') as HTMLSelectElement | null;
+      const selectedSosmed = sosmedSelect ? Array.from(sosmedSelect.selectedOptions)
+        .map((option: HTMLOptionElement) => option.value) : [];
+      
+      // Remove existing sosmed entries and add selected ones
+      formData.delete('sosmed');
+      selectedSosmed.forEach(value => {
+        formData.append('sosmed', value);
+      });
+      
+      // Disable button during submission
+      if (submitBtn) {
+        (submitBtn as HTMLButtonElement).disabled = true;
+        submitBtn.textContent = 'Mendaftar...';
+      }
+      
+      try {
+        // Try with FormData first (multipart/form-data)
+        let response = await fetch('/api/auth/register', {
+          method: 'POST',
+          body: formData
+        });
+
+        // If that fails, try with JSON
+        if (!response.ok && response.status === 400) {
+          const jsonData = {
+            nama_umkm: formData.get('nama_umkm'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            sektor: formData.get('sektor'),
+            sosmed: selectedSosmed
+          };
+          
+          response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(jsonData)
+          });
+        }
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          showMessage('Registrasi berhasil! Silakan cek email untuk verifikasi akun Anda.', 'success');
+          (e.target as HTMLFormElement)?.reset();
+          
+          // Redirect to login page after successful registration
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 3000);
+        } else {
+          showMessage(`Error: ${result.error}`, 'error');
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        showMessage(`Network error: ${(error as Error).message}`, 'error');
+      } finally {
+        if (submitBtn) {
+          (submitBtn as HTMLButtonElement).disabled = false;
+          submitBtn.textContent = 'Daftar Sekarang';
+        }
+      }
+    });
+  </script>
 </body>
 </html>
