@@ -1,225 +1,802 @@
----
-// src/pages/dashboard.astro
-import { adminDb } from '../lib/firebase-admin';
-
-// Get user data from middleware
-const user = Astro.locals.user;
-
-// Fetch user profile from Firestore
-let userData = null;
-if (user?.uid) {
-  try {
-    const userDoc = await adminDb.collection('users').doc(user.uid).get();
-    userData = userDoc.data();
-  } catch (error) {
-    console.error('Error fetching user data:', error);
-  }
-}
----
-
+<!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - TukangCS</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        color: #333;
-      }
-      
-      .header {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        padding: 1rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      
-      .logo {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: white;
-      }
-      
-      .logout-btn {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-      }
-      
-      .logout-btn:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
-      
-      .container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 2rem;
-      }
-      
-      .welcome-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
-      }
-      
-      .welcome-title {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-        color: #333;
-      }
-      
-      .welcome-subtitle {
-        color: #666;
-        margin-bottom: 1rem;
-      }
-      
-      .user-info {
-        background: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-top: 1rem;
-      }
-      
-      .user-info h3 {
-        margin-bottom: 0.5rem;
-        color: #333;
-      }
-      
-      .user-info p {
-        margin-bottom: 0.25rem;
-        color: #666;
-      }
-      
-      .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-      }
-      
-      .feature-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        transition: transform 0.3s ease;
-      }
-      
-      .feature-card:hover {
-        transform: translateY(-5px);
-      }
-      
-      .feature-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-      }
-      
-      .feature-title {
-        font-size: 1.25rem;
-        font-weight: bold;
-        margin-bottom: 0.5rem;
-        color: #333;
-      }
-      
-      .feature-description {
-        color: #666;
-        line-height: 1.6;
-      }
-      
-      .coming-soon {
-        background: linear-gradient(45deg, #ff6b6b, #ffa500);
-        color: white;
-        padding: 0.25rem 0.5rem;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        margin-left: 0.5rem;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <div class="logo">TukangCS</div>
-      <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-
-    <div class="container">
-      <div class="welcome-card">
-        <h1 class="welcome-title">Selamat Datang! 👋</h1>
-        <p class="welcome-subtitle">Anda berhasil masuk ke dashboard TukangCS</p>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        {userData && (
-          <div class="user-info">
-            <h3>Informasi Profil</h3>
-            {user && <p><strong>Email:</strong> {user.email}</p>}
-            <p><strong>Nama UMKM:</strong> {userData.nama_umkm}</p>
-            <p><strong>Sektor:</strong> {userData.sektor}</p>
-            {userData.sosmed && userData.sosmed.length > 0 && (
-              <p><strong>Platform Sosmed:</strong> {userData.sosmed.join(', ')}</p>
-            )}
-            <p><strong>Bergabung:</strong> {new Date(userData.createdAt).toLocaleDateString('id-ID')}</p>
-          </div>
-        )}
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🤖</div>
-          <h3 class="feature-title">AI Customer Service <span class="coming-soon">Coming Soon</span></h3>
-          <p class="feature-description">
-            Chatbot AI yang dapat menangani pertanyaan pelanggan secara otomatis 24/7
-          </p>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .layout {
+            display: flex;
+            margin-top: 80px;
+            min-height: calc(100vh - 80px);
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 2rem 0;
+            position: fixed;
+            height: calc(100vh - 80px);
+            overflow-y: auto;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+        }
+        
+        .menu-item {
+            margin: 0.5rem 0;
+        }
+        
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            color: #555;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+        
+        .menu-link:hover, .menu-link.active {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+        
+        .menu-icon {
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .welcome-subtitle {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .user-info h3 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .user-info p {
+            margin-bottom: 0.25rem;
+            color: #666;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 1rem 0;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area:hover .upload-icon {
+            color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .social-platform {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .social-platform.connected {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .social-platform.disconnected {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.05);
+        }
+        
+        .platform-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .platform-icon {
+            font-size: 1.5rem;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .status-connected {
+            background: #28a745;
+            color: white;
+        }
+        
+        .status-disconnected {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .document-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+        }
+        
+        .document-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .document-icon {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+        
+        .wordcloud-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sentiment-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-positive { color: #28a745; }
+        .stat-neutral { color: #ffc107; }
+        .stat-negative { color: #dc3545; }
+        
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="logo">TukangCS</div>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">📊</div>
-          <h3 class="feature-title">Analytics Dashboard <span class="coming-soon">Coming Soon</span></h3>
-          <p class="feature-description">
-            Analisis mendalam tentang interaksi pelanggan dan performa bisnis Anda
-          </p>
+        <div class="user-header">
+            <div class="user-avatar">U</div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
         </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">🔗</div>
-          <h3 class="feature-title">Multi-Platform Integration <span class="coming-soon">Coming Soon</span></h3>
-          <p class="feature-description">
-            Hubungkan WhatsApp, Instagram, Facebook, dan platform lainnya dalam satu dashboard
-          </p>
-        </div>
-
-        <div class="feature-card">
-          <div class="feature-icon">⚡</div>
-          <h3 class="feature-title">Quick Responses <span class="coming-soon">Coming Soon</span></h3>
-          <p class="feature-description">
-            Template respon cepat untuk pertanyaan yang sering diajukan pelanggan
-          </p>
-        </div>
-      </div>
     </div>
 
-  <script>
-function logout() {
-  window.location.href = '/api/auth/signout';
-}
-</script>
-</script>
-  </body>
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li class="menu-item">
+                    <a href="#" class="menu-link active" onclick="showSection('dashboard', event)">
+                        <span class="menu-icon">🏠</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link" onclick="showSection('social-media', event)">
+                        <span class="menu-icon">📱</span>
+                        Kelola Media Sosial
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link" onclick="showSection('knowledge-base', event)">
+                        <span class="menu-icon">📁</span>
+                        Knowledge Base
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link" onclick="showSection('sentiment-analysis', event)">
+                        <span class="menu-icon">📊</span>
+                        Analisis Sentimen
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link" onclick="showSection('chatbot', event)">
+                        <span class="menu-icon">🤖</span>
+                        Chatbot AI
+                    </a>
+                </li>
+                <li class="menu-item">
+                    <a href="#" class="menu-link" onclick="showSection('analytics', event)">
+                        <span class="menu-icon">📈</span>
+                        Analytics
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="content-section active">
+                <div class="welcome-card">
+                    <h1 class="welcome-title">Selamat Datang! 👋</h1>
+                    <p class="welcome-subtitle">Anda berhasil masuk ke dashboard TukangCS</p>
+                    
+                    <div class="user-info">
+                        <h3>Informasi Profil</h3>
+                        <p><strong>Email:</strong> user@example.com</p>
+                        <p><strong>Nama UMKM:</strong> Toko Serbaguna Jaya</p>
+                        <p><strong>Sektor:</strong> Retail</p>
+                        <p><strong>Platform Sosmed:</strong> WhatsApp, Instagram, Facebook</p>
+                        <p><strong>Bergabung:</strong> 21 Juni 2025</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 class="card-title">📊 Ringkasan Aktivitas</h2>
+                    <div class="sentiment-stats">
+                        <div class="stat-card">
+                            <div class="stat-number stat-positive">156</div>
+                            <div>Pesan Masuk Hari Ini</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-neutral">23</div>
+                            <div>Respon Otomatis</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-negative">5</div>
+                            <div>Perlu Perhatian</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Management Section -->
+            <div id="social-media" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">📱 Kelola Media Sosial</h2>
+                    <p>Hubungkan dan kelola akun media sosial Anda dalam satu dashboard.</p>
+
+                    <div class="social-platform connected">
+                        <div class="platform-info">
+                            <span class="platform-icon">💬</span>
+                            <div>
+                                <h4>WhatsApp Business</h4>
+                                <p>+62 812-3456-7890</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status-badge status-connected">Terhubung</span>
+                            <button class="btn btn-secondary" style="margin-left: 0.5rem;">Kelola</button>
+                        </div>
+                    </div>
+
+                    <div class="social-platform connected">
+                        <div class="platform-info">
+                            <span class="platform-icon">📷</span>
+                            <div>
+                                <h4>Instagram</h4>
+                                <p>@tokoserbaguanajaya</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status-badge status-connected">Terhubung</span>
+                            <button class="btn btn-secondary" style="margin-left: 0.5rem;">Kelola</button>
+                        </div>
+                    </div>
+
+                    <div class="social-platform disconnected">
+                        <div class="platform-info">
+                            <span class="platform-icon">👥</span>
+                            <div>
+                                <h4>Facebook</h4>
+                                <p>Belum terhubung</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status-badge status-disconnected">Terputus</span>
+                            <button class="btn" style="margin-left: 0.5rem;">Hubungkan</button>
+                        </div>
+                    </div>
+
+                    <div class="social-platform disconnected">
+                        <div class="platform-info">
+                            <span class="platform-icon">🐦</span>
+                            <div>
+                                <h4>Twitter/X</h4>
+                                <p>Belum terhubung</p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="status-badge status-disconnected">Terputus</span>
+                            <button class="btn" style="margin-left: 0.5rem;">Hubungkan</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Knowledge Base Section -->
+            <div id="knowledge-base" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">📁 Knowledge Base</h2>
+                    <p>Upload dokumen perusahaan dan data teks untuk melatih chatbot AI Anda.</p>
+
+                    <div class="form-group">
+                        <label class="form-label">Upload Dokumen Perusahaan</label>
+                        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                            <div class="upload-icon">📄</div>
+                            <p>Klik untuk upload dokumen (PDF, DOC, TXT)</p>
+                            <small>Maksimal 10MB per file</small>
+                        </div>
+                        <input type="file" id="fileInput" style="display: none;" multiple accept=".pdf,.doc,.docx,.txt">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tambah Data Teks</label>
+                        <textarea class="form-textarea" placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya..."></textarea>
+                        <button class="btn" style="margin-top: 0.5rem;">Simpan Data Teks</button>
+                    </div>
+
+                    <h3 style="margin: 2rem 0 1rem 0;">📚 Dokumen Tersimpan</h3>
+                    
+                    <div class="document-item">
+                        <div class="document-info">
+                            <span class="document-icon">📄</span>
+                            <div>
+                                <h4>Katalog Produk 2025.pdf</h4>
+                                <small>Diupload 20 Juni 2025 • 2.3 MB</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger">Hapus</button>
+                    </div>
+
+                    <div class="document-item">
+                        <div class="document-info">
+                            <span class="document-icon">📝</span>
+                            <div>
+                                <h4>FAQ Pelanggan</h4>
+                                <small>Data teks • 1,245 karakter</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger">Hapus</button>
+                    </div>
+
+                    <div class="document-item">
+                        <div class="document-info">
+                            <span class="document-icon">📄</span>
+                            <div>
+                                <h4>Kebijakan Return.docx</h4>
+                                <small>Diupload 19 Juni 2025 • 1.1 MB</small>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger">Hapus</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sentiment Analysis Section -->
+            <div id="sentiment-analysis" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">📊 Analisis Sentimen</h2>
+                    <p>Analisis sentimen dari pesan pelanggan dan visualisasi dengan word cloud.</p>
+
+                    <div class="sentiment-stats">
+                        <div class="stat-card">
+                            <div class="stat-number stat-positive">67%</div>
+                            <div>Sentimen Positif</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-neutral">23%</div>
+                            <div>Sentimen Netral</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number stat-negative">10%</div>
+                            <div>Sentimen Negatif</div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin: 2rem 0 1rem 0;">☁️ Word Cloud</h3>
+                    <div class="wordcloud-container">
+                        <div style="text-align: center; color: #667eea;">
+                            <div style="font-size: 4rem; margin-bottom: 1rem;">☁️</div>
+                            <h3>Word Cloud akan muncul di sini</h3>
+                            <p>Berdasarkan analisis pesan pelanggan terbaru</p>
+                            <button class="btn" style="margin-top: 1rem;" onclick="generateWordCloud()">Generate Word Cloud</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 2rem;">
+                        <label class="form-label">Filter Periode</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <select class="form-select" style="width: auto;">
+                                <option>7 hari terakhir</option>
+                                <option>30 hari terakhir</option>
+                                <option>3 bulan terakhir</option>
+                                <option>Custom</option>
+                            </select>
+                            <button class="btn">Refresh Analisis</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chatbot Section -->
+            <div id="chatbot" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">🤖 Chatbot AI</h2>
+                    <p>Konfigurasi dan kelola chatbot AI untuk customer service otomatis.</p>
+                    
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong>🚧 Coming Soon</strong><br>
+                        Fitur chatbot AI sedang dalam pengembangan dan akan segera hadir!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics" class="content-section">
+                <div class="card">
+                    <h2 class="card-title">📈 Analytics</h2>
+                    <p>Dashboard analitik lengkap untuk performa bisnis dan interaksi pelanggan.</p>
+                    
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <strong>🚧 Coming Soon</strong><br>
+                        Fitur analytics dashboard sedang dalam pengembangan dan akan segera hadir!
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function showSection(sectionId: string, event: MouseEvent) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // Update active menu
+            const menuLinks = document.querySelectorAll('.menu-link');
+            menuLinks.forEach(link => link.classList.remove('active'));
+            
+            if (event && event.target && event.target instanceof HTMLElement) {
+                event.target.classList.add('active');
+            }
+            
+            // Close sidebar on mobile
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                }
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
+        }
+
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = '/api/auth/signout';
+            }
+        }
+
+        function generateWordCloud() {
+            const container = document.querySelector('.wordcloud-container');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="text-align: center; color: #667eea;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">⏳</div>
+                    <h3>Generating Word Cloud...</h3>
+                    <p>Sedang menganalisis data pelanggan</p>
+                </div>
+            `;
+            
+            // Simulate generation process
+            setTimeout(() => {
+                if (container) {
+                    container.innerHTML = `
+                        <div style="text-align: center; line-height: 2;">
+                            <span style="font-size: 2.5rem; color: #28a745; margin: 0.5rem;">BAGUS</span>
+                            <span style="font-size: 1.8rem; color: #667eea; margin: 0.5rem;">PELAYANAN</span>
+                            <span style="font-size: 2.2rem; color: #ffc107; margin: 0.5rem;">CEPAT</span>
+                            <br>
+                            <span style="font-size: 1.5rem; color: #dc3545; margin: 0.5rem;">MAHAL</span>
+                            <span style="font-size: 3rem; color: #28a745; margin: 0.5rem;">PUAS</span>
+                            <span style="font-size: 1.6rem; color: #667eea; margin: 0.5rem;">BERKUALITAS</span>
+                            <br>
+                            <span style="font-size: 1.8rem; color: #ffc107; margin: 0.5rem;">RAMAH</span>
+                            <span style="font-size: 1.4rem; color: #28a745; margin: 0.5rem;">REKOMENDASI</span>
+                            <span style="font-size: 2rem; color: #667eea; margin: 0.5rem;">TERPERCAYA</span>
+                            <br>
+                            <span style="font-size: 1.3rem; color: #dc3545; margin: 0.5rem;">LAMBAT</span>
+                            <span style="font-size: 2.4rem; color: #28a745; margin: 0.5rem;">MANTAP</span>
+                            <span style="font-size: 1.7rem; color: #ffc107; margin: 0.5rem;">LENGKAP</span>
+                        </div>
+                    `;
+                }
+            }, 2000);
+        }
+
+        // Handle file upload
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const target = e.target;
+                    if (target && target instanceof HTMLInputElement && target.files) {
+                        const files = Array.from(target.files);
+                        if (files.length > 0) {
+                            alert(`${files.length} file(s) berhasil dipilih untuk diupload!`);
+                            // Here you would handle the actual file upload
+                        }
+                    }
+                });
+            }
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            if (window.innerWidth <= 768 && 
+                sidebar && 
+                toggleBtn && 
+                e.target instanceof Node &&
+                !sidebar.contains(e.target) && 
+                !toggleBtn.contains(e.target) && 
+                sidebar.classList.contains('open')) {
+                sidebar.classList.remove('open');
+            }
+        });
+    </script>
+</body>
 </html>
