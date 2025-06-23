@@ -6,6 +6,7 @@ import Footer from "../footer/footer.astro"
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>TukangCS - AI Customer Service Chatbot</title>
     <style>
         * {
@@ -15,9 +16,9 @@ import Footer from "../footer/footer.astro"
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             overflow-x: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
         }
 
         /* Animations */
@@ -418,10 +419,12 @@ import Footer from "../footer/footer.astro"
                     </p>
                     <div class="flex flex-col-mobile gap-4">
                         <button class="btn-primary">
-                            🚀 Mulai Sekarang
+                            <img src="/images/rocket-icon.png" alt="Mulai Sekarang" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />
+                            Mulai Sekarang
                         </button>
                         <button class="btn-secondary">
-                            📖 Pelajari Lebih Lanjut
+                            <img src="/images/open-book.png" alt="Mulai Sekarang" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />
+                            Pelajari Lebih Lanjut 
                         </button>
                     </div>
                 </div>
@@ -474,9 +477,10 @@ import Footer from "../footer/footer.astro"
                         
                         <!-- CTA Buttons -->
                         <div class="flex flex-col-mobile gap-4">
-                            <button class="btn-primary reveal-element stagger-1">
-                                🚀 Lihat Demo
-                            </button>
+                           <button class="btn-primary">
+                            <img src="/images/rocket-icon.png" alt="Mulai Sekarang" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />
+                            Mulai Sekarang
+                        </button>
                             <button class="btn-secondary reveal-element stagger-2">
                                 📅 Jadwalkan Konsultasi
                             </button>
