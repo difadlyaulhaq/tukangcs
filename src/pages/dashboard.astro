@@ -596,45 +596,45 @@
 
     <div class="layout">
         <nav class="sidebar" id="sidebar">
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a  href="javascript:void(0)" class="menu-link active" onclick="showSection('dashboard', this, event)">
-                        <span class="menu-icon"><i class="fas fa-home"></i></span>
-                        Dashboard
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="javascript:void(0)" class="menu-link" onclick="showSection('social-media', this, event)">
-                        <span class="menu-icon"><i class="fas fa-mobile-alt"></i></span>
-                        Kelola Media Sosial
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="javascript:void(0)" class="menu-link" onclick="showSection('knowledge-base', this, event)">
-                        <span class="menu-icon"><i class="fas fa-folder-open"></i></span>
-                        Knowledge Base
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="javascript:void(0)" class="menu-link" onclick="showSection('sentiment-analysis', this, event)">
-                        <span class="menu-icon"><i class="fas fa-chart-pie"></i></span>
-                        Analisis Sentimen
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href="javascript:void(0)" class="menu-link" onclick="showSection('chatbot', this, event)">
-                        <span class="menu-icon"><i class="fas fa-robot"></i></span>
-                        Chatbot AI
-                    </a>
-                </li>
-                <li class="menu-item">
-                    <a href=""class="menu-link" onclick="showSection('analytics', this, event)">
-                        <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
-                        Analytics
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <ul class="sidebar-menu">
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link active" onclick="showSection('dashboard', event)">
+                <span class="menu-icon"><i class="fas fa-home"></i></span>
+                Dashboard
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link" onclick="showSection('social-media', event)">
+                <span class="menu-icon"><i class="fas fa-mobile-alt"></i></span>
+                Kelola Media Sosial
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link" onclick="showSection('knowledge-base', event)">
+                <span class="menu-icon"><i class="fas fa-folder-open"></i></span>
+                Knowledge Base
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link" onclick="showSection('sentiment-analysis', event)">
+                <span class="menu-icon"><i class="fas fa-chart-pie"></i></span>
+                Analisis Sentimen
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link" onclick="showSection('chatbot', event)">
+                <span class="menu-icon"><i class="fas fa-robot"></i></span>
+                Chatbot AI
+            </a>
+        </li>
+        <li class="menu-item">
+            <a href="javascript:void(0)" class="menu-link" onclick="showSection('analytics', event)">
+                <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+                Analytics
+            </a>
+        </li>
+    </ul>
+</nav>
 
         <main class="main-content">
             <!-- Dashboard Section -->
@@ -953,165 +953,172 @@
     </div>
 
 <script>
-        // Toggle sidebar on mobile
-        function toggleSidebar(): void {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (sidebar) {
-                sidebar.classList.toggle('open');
-            }
-            if (overlay) {
-                overlay.classList.toggle('visible');
-            }
+    // Toggle sidebar on mobile
+    function toggleSidebar(): void {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        if (sidebar) {
+            sidebar.classList.toggle('open');
         }
-        
-        // Close sidebar
-        function closeSidebar(): void {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (sidebar) {
-                sidebar.classList.remove('open');
-            }
-            if (overlay) {
-                overlay.classList.remove('visible');
-            }
+        if (overlay) {
+            overlay.classList.toggle('visible');
         }
-        
-        // Show section and update active menu
-        function showSection(sectionId: string, element: HTMLElement, event: Event): void {
-            event.preventDefault();
-            
-            // Hide all sections
-            const sections = document.querySelectorAll('.content-section');
-            sections.forEach(section => section.classList.remove('active'));
-            
-            // Show selected section
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.classList.add('active');
-            }
-            
-            // Update active menu
-            const menuLinks = document.querySelectorAll('.menu-link');
-            menuLinks.forEach(link => link.classList.remove('active'));
-            
-            // Add active class to clicked element
-            element.classList.add('active');
-            
-            // Close sidebar on mobile
-            if (window.innerWidth <= 992) {
-                closeSidebar();
-            }
+    }
+    (window as any).toggleSidebar = toggleSidebar;
+
+    // Close sidebar
+    function closeSidebar(): void {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        if (sidebar) {
+            sidebar.classList.remove('open');
         }
-        
-        // Logout function
-        function logout(): void {
-            if (confirm('Apakah Anda yakin ingin logout?')) {
-                showNotification('Logout berhasil!', 'success');
-                setTimeout(() => {
-                    // Redirect to login page
-                    window.location.href = '#';
-                }, 1500);
-            }
+        if (overlay) {
+            overlay.classList.remove('visible');
         }
-        
-        // Connect platform
-        function connectPlatform(platform: string): void {
-            showNotification(`Menghubungkan ${platform}...`, 'success');
+    }
+    (window as any).closeSidebar = closeSidebar;
+
+    // Sidebar navigation function
+    function showSection(sectionId: string, event: MouseEvent) {
+        event.preventDefault();
+
+        // Hide all sections
+        const sections = document.querySelectorAll('.content-section');
+        sections.forEach(section => section.classList.remove('active'));
+
+        // Show selected section
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) {
+            targetSection.classList.add('active');
+        }
+
+        // Remove active from all menu links
+        const menuLinks = document.querySelectorAll('.menu-link');
+        menuLinks.forEach(link => link.classList.remove('active'));
+
+        // Add active to clicked menu
+        if (event.currentTarget) {
+            (event.currentTarget as HTMLElement).classList.add('active');
+        }
+
+        // Close sidebar on mobile
+        if (window.innerWidth <= 992) {
+            closeSidebar();
+        }
+    }
+    (window as any).showSection = showSection;
+
+    // Logout function
+    function logout(): void {
+        if (confirm('Apakah Anda yakin ingin logout?')) {
+            showNotification('Logout berhasil!', 'success');
             setTimeout(() => {
-                showNotification(`${platform} berhasil terhubung!`, 'success');
+                window.location.href = '/api/auth/signout';
             }, 1500);
         }
-        
-        // Generate word cloud
-        function generateWordCloud(): void {
-            const container = document.getElementById('wordcloudContainer');
-            if (!container) return;
-            
-            container.innerHTML = `
-                <div style="text-align: center; color: #667eea;">
-                    <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-spinner fa-spin"></i></div>
-                    <h3>Generating Word Cloud...</h3>
-                    <p>Sedang menganalisis data pelanggan</p>
-                </div>
-            `;
-            
-            // Simulate generation process
-            setTimeout(() => {
-                if (container) {
-                    container.innerHTML = `
-                        <div style="text-align: center; line-height: 2; padding: 20px;">
-                            <span style="font-size: 2.5rem; color: #28a745; margin: 0.5rem;">BAGUS</span>
-                            <span style="font-size: 1.8rem; color: #667eea; margin: 0.5rem;">PELAYANAN</span>
-                            <span style="font-size: 2.2rem; color: #ffc107; margin: 0.5rem;">CEPAT</span>
-                            <br>
-                            <span style="font-size: 1.5rem; color: #dc3545; margin: 0.5rem;">MAHAL</span>
-                            <span style="font-size: 3rem; color: #28a745; margin: 0.5rem;">PUAS</span>
-                            <span style="font-size: 1.6rem; color: #667eea; margin: 0.5rem;">BERKUALITAS</span>
-                            <br>
-                            <span style="font-size: 1.8rem; color: #ffc107; margin: 0.5rem;">RAMAH</span>
-                            <span style="font-size: 1.4rem; color: #28a745; margin: 0.5rem;">REKOMENDASI</span>
-                            <span style="font-size: 2rem; color: #667eea; margin: 0.5rem;">TERPERCAYA</span>
-                            <br>
-                            <span style="font-size: 1.3rem; color: #dc3545; margin: 0.5rem;">LAMBAT</span>
-                            <span style="font-size: 2.4rem; color: #28a745; margin: 0.5rem;">MANTAP</span>
-                            <span style="font-size: 1.7rem; color: #ffc107; margin: 0.5rem;">LENGKAP</span>
-                        </div>
-                    `;
-                    showNotification('Word Cloud berhasil dibuat!', 'success');
-                }
-            }, 2000);
-        }
-        
-        // Show notification
-        function showNotification(message: string, type: string): void {
-            const notification = document.getElementById('notification');
-            if (!notification) return;
-            
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                <span>${message}</span>
-            `;
-            notification.className = `notification show ${type}`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Handle file upload
-        document.addEventListener('DOMContentLoaded', function(): void {
-            const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-            if (fileInput) {
-                fileInput.addEventListener('change', function(e: Event): void {
-                    const target = e.target as HTMLInputElement;
-                    if (target && target.files) {
-                        const files = Array.from(target.files);
-                        if (files.length > 0) {
-                            showNotification(`${files.length} file berhasil dipilih untuk diupload!`, 'success');
-                        }
-                    }
-                });
+    }
+    (window as any).logout = logout;
+
+    // Connect platform
+    function connectPlatform(platform: string): void {
+        showNotification(`Menghubungkan ${platform}...`, 'success');
+        setTimeout(() => {
+            showNotification(`${platform} berhasil terhubung!`, 'success');
+        }, 1500);
+    }
+    (window as any).connectPlatform = connectPlatform;
+
+    // Generate word cloud
+    function generateWordCloud(): void {
+        const container = document.getElementById('wordcloudContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div style="text-align: center; color: #667eea;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-spinner fa-spin"></i></div>
+                <h3>Generating Word Cloud...</h3>
+                <p>Sedang menganalisis data pelanggan</p>
+            </div>
+        `;
+
+        setTimeout(() => {
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; line-height: 2; padding: 20px;">
+                        <span style="font-size: 2.5rem; color: #28a745; margin: 0.5rem;">BAGUS</span>
+                        <span style="font-size: 1.8rem; color: #667eea; margin: 0.5rem;">PELAYANAN</span>
+                        <span style="font-size: 2.2rem; color: #ffc107; margin: 0.5rem;">CEPAT</span>
+                        <br>
+                        <span style="font-size: 1.5rem; color: #dc3545; margin: 0.5rem;">MAHAL</span>
+                        <span style="font-size: 3rem; color: #28a745; margin: 0.5rem;">PUAS</span>
+                        <span style="font-size: 1.6rem; color: #667eea; margin: 0.5rem;">BERKUALITAS</span>
+                        <br>
+                        <span style="font-size: 1.8rem; color: #ffc107; margin: 0.5rem;">RAMAH</span>
+                        <span style="font-size: 1.4rem; color: #28a745; margin: 0.5rem;">REKOMENDASI</span>
+                        <span style="font-size: 2rem; color: #667eea; margin: 0.5rem;">TERPERCAYA</span>
+                        <br>
+                        <span style="font-size: 1.3rem; color: #dc3545; margin: 0.5rem;">LAMBAT</span>
+                        <span style="font-size: 2.4rem; color: #28a745; margin: 0.5rem;">MANTAP</span>
+                        <span style="font-size: 1.7rem; color: #ffc107; margin: 0.5rem;">LENGKAP</span>
+                    </div>
+                `;
+                showNotification('Word Cloud berhasil dibuat!', 'success');
             }
-            
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function(e: Event): void {
-                const sidebar = document.getElementById('sidebar');
-                const toggleBtn = document.querySelector('.mobile-menu-toggle') as HTMLElement;
-                
-                if (window.innerWidth <= 992 && 
-                    sidebar && 
-                    toggleBtn && 
-                    e.target &&
-                    e.target !== sidebar && 
-                    !sidebar.contains(e.target as Node) && 
-                    e.target !== toggleBtn && 
-                    !toggleBtn.contains(e.target as Node) && 
-                    sidebar.classList.contains('open')) {
-                    closeSidebar();
+        }, 2000);
+    }
+    (window as any).generateWordCloud = generateWordCloud;
+
+    // Show notification
+    function showNotification(message: string, type: string): void {
+        const notification = document.getElementById('notification');
+        if (!notification) return;
+
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        `;
+        notification.className = `notification show ${type}`;
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+    (window as any).showNotification = showNotification;
+
+    // Handle file upload
+    document.addEventListener('DOMContentLoaded', function(): void {
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e: Event): void {
+                const target = e.target as HTMLInputElement;
+                if (target && target.files) {
+                    const files = Array.from(target.files);
+                    if (files.length > 0) {
+                        showNotification(`${files.length} file berhasil dipilih untuk diupload!`, 'success');
+                    }
                 }
             });
+        }
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e: Event): void {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle') as HTMLElement;
+
+            if (window.innerWidth <= 992 &&
+                sidebar &&
+                toggleBtn &&
+                e.target &&
+                e.target !== sidebar &&
+                !sidebar.contains(e.target as Node) &&
+                e.target !== toggleBtn &&
+                !toggleBtn.contains(e.target as Node) &&
+                sidebar.classList.contains('open')) {
+                closeSidebar();
+            }
         });
-    </script>
+    });
+</script>
 </body>
 </html>
