@@ -1091,63 +1091,238 @@
             }
         });
     });
+    
 </script>
 <script type="module">
 document.addEventListener("DOMContentLoaded", async () => {
-  // Profil
+  // Loading state
+  const showLoading = (show = true) => {
+    const elements = [
+      "user-email", "user-nama", "user-sektor", "user-sosmed", "user-bergabung",
+      "stat-pesan-masuk", "stat-respon-otomatis", "stat-perlu-perhatian"
+    ];
+    
+    elements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = show ? "Memuat..." : "-";
+      }
+    });
+    
+    const aktivitasList = document.getElementById("aktivitas-terbaru");
+    if (aktivitasList) {
+      aktivitasList.innerHTML = show ? 
+        '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat aktivitas...</div>' : 
+        '<div style="text-align: center; color: #666;">Tidak ada aktivitas terbaru</div>';
+    }
+  };
+  
+  // Show loading initially
+  showLoading(true);
+
+  // Element references
   const emailEl = document.getElementById("user-email");
   const namaEl = document.getElementById("user-nama");
   const sektorEl = document.getElementById("user-sektor");
   const sosmedEl = document.getElementById("user-sosmed");
   const bergabungEl = document.getElementById("user-bergabung");
 
-  // Statistik
   const pesanMasukEl = document.getElementById("stat-pesan-masuk");
   const responOtomatisEl = document.getElementById("stat-respon-otomatis");
   const perluPerhatianEl = document.getElementById("stat-perlu-perhatian");
 
-  // Aktivitas terbaru
   const aktivitasList = document.getElementById("aktivitas-terbaru");
 
   try {
-    const res = await fetch("/api/dashboard-data");
+    const res = await fetch("/api/dashboard-data", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
     const data = await res.json();
     console.log("DATA DASHBOARD:", data);
 
-    if (emailEl) emailEl.textContent = data.user.email || "-";
-    if (namaEl) namaEl.textContent = data.user.nama_umkm || "-";
-    if (sektorEl) sektorEl.textContent = data.user.sektor || "-";
+    // Update profil dengan fallback
+    if (emailEl) emailEl.textContent = data.user?.email || "demo@example.com";
+    if (namaEl) namaEl.textContent = data.user?.nama_umkm || "Demo UMKM";
+    if (sektorEl) sektorEl.textContent = data.user?.sektor || "Demo Sektor";
+    
     if (sosmedEl) {
-      const sosmed = data.user.sosmed;
-      sosmedEl.textContent = Array.isArray(sosmed) ? sosmed.join(", ") : (sosmed || "-");
+      const sosmed = data.user?.sosmed;
+      if (Array.isArray(sosmed)) {
+        sosmedEl.textContent = sosmed.join(", ");
+      } else if (sosmed) {
+        sosmedEl.textContent = sosmed;
+      } else {
+        sosmedEl.textContent = "Instagram, WhatsApp";
+      }
     }
-    if (bergabungEl) bergabungEl.textContent = data.user.bergabung || "-";
+    
+    if (bergabungEl) bergabungEl.textContent = data.user?.bergabung || new Date().toLocaleDateString("id-ID");
 
-    if (pesanMasukEl) pesanMasukEl.textContent = data.stats.pesanMasuk ?? "0";
-    if (responOtomatisEl) responOtomatisEl.textContent = data.stats.responOtomatis ?? "0";
-    if (perluPerhatianEl) perluPerhatianEl.textContent = data.stats.perluPerhatian ?? "0";
+    // Update statistik
+    if (pesanMasukEl) pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
+    if (responOtomatisEl) responOtomatisEl.textContent = String(data.stats?.responOtomatis ?? 0);
+    if (perluPerhatianEl) perluPerhatianEl.textContent = String(data.stats?.perluPerhatian ?? 0);
 
-    if (aktivitasList && data.stats.pesanTerbaru) {
-      aktivitasList.innerHTML = "";
-      data.stats.pesanTerbaru.forEach((item) => {
-        let icon = "fa-comment", bg = "#667eea";
-        if (item.status === "otomatis") { icon = "fa-check-circle"; bg = "#28a745"; }
-        if (item.status === "perlu_perhatian") { icon = "fa-exclamation-triangle"; bg = "#ffc107"; }
-        aktivitasList.innerHTML += `
-          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.2rem;">
-            <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-              <i class="fas ${icon}"></i>
-            </div>
-            <div>
-              <div style="font-weight: 500;">${item.status === "otomatis" ? "Respon otomatis terkirim" : item.status === "perlu_perhatian" ? "Pesan perlu perhatian" : "Pesan baru dari " + item.nama}</div>
-              <div style="color: #666; font-size: 0.9rem;">"${item.isi}" - ${new Date(item.waktu).toLocaleString("id-ID")}</div>
-            </div>
+    // Update aktivitas terbaru
+    if (aktivitasList) {
+      const pesanTerbaru = data.stats?.pesanTerbaru || [];
+      
+      if (pesanTerbaru.length === 0) {
+        aktivitasList.innerHTML = `
+          <div style="text-align: center; color: #666; padding: 2rem;">
+            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <div>Belum ada aktivitas terbaru</div>
           </div>
         `;
-      });
+      } else {
+        aktivitasList.innerHTML = "";
+        
+        pesanTerbaru.forEach((item, index) => {
+          let icon = "fa-comment";
+          let bg = "#667eea";
+          let statusText = "Pesan baru";
+          
+          if (item.status === "otomatis") { 
+            icon = "fa-check-circle"; 
+            bg = "#28a745"; 
+            statusText = "Respon otomatis terkirim";
+          } else if (item.status === "perlu_perhatian") { 
+            icon = "fa-exclamation-triangle"; 
+            bg = "#ffc107"; 
+            statusText = "Pesan perlu perhatian";
+          } else {
+            statusText = `Pesan baru dari ${item.nama || "Customer"}`;
+          }
+          
+          // Format waktu
+          let waktuFormatted = "Baru saja";
+          try {
+            const waktu = new Date(item.waktu);
+            if (!isNaN(waktu.getTime())) {
+              waktuFormatted = waktu.toLocaleString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+            }
+          } catch (e) {
+            console.warn("Error formatting date:", e);
+          }
+          
+          // Potong pesan jika terlalu panjang
+          const isiPesan = (item.isi || "No message").length > 100 ? 
+            (item.isi || "No message").substring(0, 100) + "..." : 
+            (item.isi || "No message");
+          
+          aktivitasList.innerHTML += `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: ${index < pesanTerbaru.length - 1 ? '1.2rem' : '0'};">
+              <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas ${icon}"></i>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 500; margin-bottom: 4px;">${statusText}</div>
+                <div style="color: #666; font-size: 0.9rem; line-height: 1.4;">
+                  "${isiPesan}"
+                  <br>
+                  <span style="font-size: 0.8rem; color: #999;">${waktuFormatted}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
     }
+
   } catch (err) {
-    // Handle error
+    console.error("Dashboard loading error:", err);
+    
+    // Show error state dengan data fallback
+    showLoading(false);
+    
+    // Set fallback data
+    if (emailEl) emailEl.textContent = "demo@example.com";
+    if (namaEl) namaEl.textContent = "Demo UMKM";
+    if (sektorEl) sektorEl.textContent = "Demo Sektor";
+    if (sosmedEl) sosmedEl.textContent = "Instagram, WhatsApp";
+    if (bergabungEl) bergabungEl.textContent = new Date().toLocaleDateString("id-ID");
+    
+    if (pesanMasukEl) pesanMasukEl.textContent = "0";
+    if (responOtomatisEl) responOtomatisEl.textContent = "0";
+    if (perluPerhatianEl) perluPerhatianEl.textContent = "0";
+    
+    if (aktivitasList) {
+      aktivitasList.innerHTML = `
+        <div style="text-align: center; color: #dc3545; padding: 2rem;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+          <div style="margin-bottom: 0.5rem;">Gagal memuat data dashboard</div>
+          <div style="font-size: 0.9rem; color: #666;">
+            ${err.message || "Terjadi kesalahan saat mengambil data"}
+          </div>
+          <button onclick="location.reload()" style="
+            margin-top: 1rem; 
+            padding: 0.5rem 1rem; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+          ">
+            <i class="fas fa-refresh"></i> Muat Ulang
+          </button>
+        </div>
+      `;
+    }
+    
+    // Optional: Show toast notification
+    const showErrorToast = () => {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+      `;
+      toast.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        Gagal memuat dashboard. Menggunakan data demo.
+      `;
+      
+      // Add animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(toast);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    };
+    
+    showErrorToast();
   }
 });
 </script>
