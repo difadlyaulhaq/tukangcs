@@ -1,4 +1,4 @@
-import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_VpHvryV6.mjs';
+import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_CZtLfzeI.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const prerender = false;
@@ -6,7 +6,7 @@ const POST = async ({ request, cookies }) => {
   console.log("Login API called at:", (/* @__PURE__ */ new Date()).toISOString());
   console.log("Environment check:", {
     NODE_ENV: process.env.NODE_ENV,
-    FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID ? "✓" : "✗"
+    FIREBASE_PROJECT_ID: "✓" 
   });
   try {
     const body = await request.json();
