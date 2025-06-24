@@ -647,65 +647,37 @@
                     <p class="welcome-subtitle">Anda berhasil masuk ke dashboard TukangCS</p>
                     
                     <div class="user-info">
-                        <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
-                        <p><strong>Email:</strong> user@example.com</p>
-                        <p><strong>Nama UMKM:</strong> Toko Serbaguna Jaya</p>
-                        <p><strong>Sektor:</strong> Retail</p>
-                        <p><strong>Platform Sosmed:</strong> WhatsApp, Instagram, Facebook</p>
-                        <p><strong>Bergabung:</strong> 21 Juni 2025</p>
-                    </div>
+                    <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
+                    <p><strong>Email:</strong> <span id="user-email">-</span></p>
+                    <p><strong>Nama UMKM:</strong> <span id="user-nama">-</span></p>
+                    <p><strong>Sektor:</strong> <span id="user-sektor">-</span></p>
+                    <p><strong>Platform Sosmed:</strong> <span id="user-sosmed">-</span></p>
+                    <p><strong>Bergabung:</strong> <span id="user-bergabung">-</span></p>
                 </div>
-
+            </div>
                 <div class="card">
-                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Ringkasan Aktivitas</h2>
-                    <div class="sentiment-stats">
-                        <div class="stat-card">
-                            <div class="stat-number stat-positive">156</div>
-                            <div>Pesan Masuk Hari Ini</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number stat-neutral">23</div>
-                            <div>Respon Otomatis</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number stat-negative">5</div>
-                            <div>Perlu Perhatian</div>
-                        </div>
+                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Ringkasan Aktivitas</h2>
+                <div class="sentiment-stats">
+                    <div class="stat-card">
+                        <div class="stat-number stat-positive" id="stat-pesan-masuk">0</div>
+                        <div>Pesan Masuk Hari Ini</div>
                     </div>
-                    
-                    <div style="margin-top: 2rem;">
-                        <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
-                        <div style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;">
-                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.2rem;">
-                                <div style="background: #667eea; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-comment"></i>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 500;">Pesan baru dari Budi Santoso</div>
-                                    <div style="color: #666; font-size: 0.9rem;">"Apakah produk ini ready stock?" - 10 menit lalu</div>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.2rem;">
-                                <div style="background: #28a745; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 500;">Respon otomatis terkirim</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Ke pelanggan Siti Rahayu - 25 menit lalu</div>
-                                </div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <div style="background: #ffc107; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 500;">Pesan perlu perhatian</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Keluhan dari Ahmad Fauzi - 1 jam lalu</div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-neutral" id="stat-respon-otomatis">0</div>
+                        <div>Respon Otomatis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number stat-negative" id="stat-perlu-perhatian">0</div>
+                        <div>Perlu Perhatian</div>
                     </div>
                 </div>
+                <div style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
+                    <div id="aktivitas-terbaru" style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;">
+                        <!-- Diisi via JS -->
+                    </div>
+                </div>
+            </div>
             </div>
 
             <!-- Social Media Management Section -->
@@ -1119,6 +1091,65 @@
             }
         });
     });
+</script>
+<script type="module">
+document.addEventListener("DOMContentLoaded", async () => {
+  // Profil
+  const emailEl = document.getElementById("user-email");
+  const namaEl = document.getElementById("user-nama");
+  const sektorEl = document.getElementById("user-sektor");
+  const sosmedEl = document.getElementById("user-sosmed");
+  const bergabungEl = document.getElementById("user-bergabung");
+
+  // Statistik
+  const pesanMasukEl = document.getElementById("stat-pesan-masuk");
+  const responOtomatisEl = document.getElementById("stat-respon-otomatis");
+  const perluPerhatianEl = document.getElementById("stat-perlu-perhatian");
+
+  // Aktivitas terbaru
+  const aktivitasList = document.getElementById("aktivitas-terbaru");
+
+  try {
+    const res = await fetch("/api/dashboard-data");
+    const data = await res.json();
+    console.log("DATA DASHBOARD:", data);
+
+    if (emailEl) emailEl.textContent = data.user.email || "-";
+    if (namaEl) namaEl.textContent = data.user.nama_umkm || "-";
+    if (sektorEl) sektorEl.textContent = data.user.sektor || "-";
+    if (sosmedEl) {
+      const sosmed = data.user.sosmed;
+      sosmedEl.textContent = Array.isArray(sosmed) ? sosmed.join(", ") : (sosmed || "-");
+    }
+    if (bergabungEl) bergabungEl.textContent = data.user.bergabung || "-";
+
+    if (pesanMasukEl) pesanMasukEl.textContent = data.stats.pesanMasuk ?? "0";
+    if (responOtomatisEl) responOtomatisEl.textContent = data.stats.responOtomatis ?? "0";
+    if (perluPerhatianEl) perluPerhatianEl.textContent = data.stats.perluPerhatian ?? "0";
+
+    if (aktivitasList && data.stats.pesanTerbaru) {
+      aktivitasList.innerHTML = "";
+      data.stats.pesanTerbaru.forEach((item) => {
+        let icon = "fa-comment", bg = "#667eea";
+        if (item.status === "otomatis") { icon = "fa-check-circle"; bg = "#28a745"; }
+        if (item.status === "perlu_perhatian") { icon = "fa-exclamation-triangle"; bg = "#ffc107"; }
+        aktivitasList.innerHTML += `
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.2rem;">
+            <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <i class="fas ${icon}"></i>
+            </div>
+            <div>
+              <div style="font-weight: 500;">${item.status === "otomatis" ? "Respon otomatis terkirim" : item.status === "perlu_perhatian" ? "Pesan perlu perhatian" : "Pesan baru dari " + item.nama}</div>
+              <div style="color: #666; font-size: 0.9rem;">"${item.isi}" - ${new Date(item.waktu).toLocaleString("id-ID")}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  } catch (err) {
+    // Handle error
+  }
+});
 </script>
 </body>
 </html>
