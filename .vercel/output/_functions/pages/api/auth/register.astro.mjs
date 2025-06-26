@@ -1,9 +1,23 @@
-import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_CZtLfzeI.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const prerender = false;
 const POST = async ({ request }) => {
   try {
+    console.log("Register API called at:", (/* @__PURE__ */ new Date()).toISOString());
+    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_CQamzRmh.mjs');
+    if (!adminAuth || !adminDb) {
+      console.error("Firebase Admin not initialized");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Service tidak tersedia saat ini"
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
     const body = await request.json();
     const { email, password, nama_umkm, sektor, sosmed } = body;
     if (!email || !password || !nama_umkm || !sektor) {
@@ -66,7 +80,8 @@ const POST = async ({ request }) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: errorMessage
+        error: errorMessage,
+        debug: process.env.NODE_ENV === "development" ? error.message : void 0
       }),
       {
         status: 500,

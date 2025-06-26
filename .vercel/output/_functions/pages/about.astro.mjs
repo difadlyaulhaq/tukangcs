@@ -1,6 +1,6 @@
 import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate } from '../chunks/astro/server_BmReEcGK.mjs';
 import 'kleur/colors';
-import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_5O4tyabJ.mjs';
+import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_CZ2ykVmt.mjs';
 /* empty css                                 */
 export { renderers } from '../renderers.mjs';
 
@@ -51,10 +51,10 @@ Siap Bergabung dengan Kami?
 Mari bersama-sama menghadirkan customer experience terbaik untuk bisnis Anda
 </p> <button class="btn-primary" data-astro-cid-kh7btl4r>
 🚀 Mulai Sekarang
-</button> </div> </div> </div> </section> <!-- Footer --> <footer data-astro-cid-kh7btl4r> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-kh7btl4r": true })} </footer> ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/pages/about.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
-}, "D:/project/web/tukangcs/absent-accretion/src/pages/about.astro", void 0);
+</button> </div> </div> </div> </section> <!-- Footer --> <footer data-astro-cid-kh7btl4r> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-kh7btl4r": true })} </footer> ${renderScript($$result, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/about.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
+}, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/about.astro", void 0);
 
-const $$file = "D:/project/web/tukangcs/absent-accretion/src/pages/about.astro";
+const $$file = "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/about.astro";
 const $$url = "/about";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

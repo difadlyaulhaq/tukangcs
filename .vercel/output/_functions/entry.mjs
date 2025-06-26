@@ -1,6 +1,10 @@
 import { renderers } from './renderers.mjs';
 import { c as createExports } from './chunks/entrypoint_dVxEQ-GE.mjs';
-import { manifest } from './manifest_DYpz83rz.mjs';
+<<<<<<< HEAD
+import { manifest } from './manifest_DsEjHCaH.mjs';
+=======
+import { manifest } from './manifest_DUgVcq0G.mjs';
+>>>>>>> e062f1ea36522aeac6c737e9847dc9d32e55abb5
 
 const serverIslandMap = new Map();;
 
@@ -11,13 +15,16 @@ const _page3 = () => import('./pages/api/auth/register.astro.mjs');
 const _page4 = () => import('./pages/api/auth/signout.astro.mjs');
 const _page5 = () => import('./pages/api/dashboard-data.astro.mjs');
 const _page6 = () => import('./pages/api/test-env.astro.mjs');
-const _page7 = () => import('./pages/contact.astro.mjs');
-const _page8 = () => import('./pages/dashboard.astro.mjs');
-const _page9 = () => import('./pages/get-started.astro.mjs');
-const _page10 = () => import('./pages/login.astro.mjs');
-const _page11 = () => import('./pages/product.astro.mjs');
-const _page12 = () => import('./pages/register.astro.mjs');
-const _page13 = () => import('./pages/index.astro.mjs');
+const _page7 = () => import('./pages/api/whatsapp/connect.astro.mjs');
+const _page8 = () => import('./pages/api/whatsapp/messages.astro.mjs');
+const _page9 = () => import('./pages/api/whatsapp/send.astro.mjs');
+const _page10 = () => import('./pages/contact.astro.mjs');
+const _page11 = () => import('./pages/dashboard.astro.mjs');
+const _page12 = () => import('./pages/get-started.astro.mjs');
+const _page13 = () => import('./pages/login.astro.mjs');
+const _page14 = () => import('./pages/product.astro.mjs');
+const _page15 = () => import('./pages/register.astro.mjs');
+const _page16 = () => import('./pages/index.astro.mjs');
 const pageMap = new Map([
     ["node_modules/astro/dist/assets/endpoint/generic.js", _page0],
     ["src/pages/about.astro", _page1],
@@ -26,13 +33,16 @@ const pageMap = new Map([
     ["src/pages/api/auth/signout.ts", _page4],
     ["src/pages/api/dashboard-data.ts", _page5],
     ["src/pages/api/test-env.ts", _page6],
-    ["src/pages/contact.astro", _page7],
-    ["src/pages/dashboard.astro", _page8],
-    ["src/pages/get-started.astro", _page9],
-    ["src/pages/login.astro", _page10],
-    ["src/pages/product.astro", _page11],
-    ["src/pages/register.astro", _page12],
-    ["src/pages/index.astro", _page13]
+    ["src/pages/api/whatsapp/connect.js", _page7],
+    ["src/pages/api/whatsapp/messages.js", _page8],
+    ["src/pages/api/whatsapp/send.js", _page9],
+    ["src/pages/contact.astro", _page10],
+    ["src/pages/dashboard.astro", _page11],
+    ["src/pages/get-started.astro", _page12],
+    ["src/pages/login.astro", _page13],
+    ["src/pages/product.astro", _page14],
+    ["src/pages/register.astro", _page15],
+    ["src/pages/index.astro", _page16]
 ]);
 
 const _manifest = Object.assign(manifest, {
@@ -43,7 +53,11 @@ const _manifest = Object.assign(manifest, {
     middleware: () => import('./_noop-middleware.mjs')
 });
 const _args = {
-    "middlewareSecret": "fa38d77a-c80f-49fc-803e-39d3b42b661f",
+<<<<<<< HEAD
+    "middlewareSecret": "ea8e524a-9cab-4d4f-90f8-9ef2f56b5e57",
+=======
+    "middlewareSecret": "cb1660c7-e909-4bd8-a434-15d7ee23d3bf",
+>>>>>>> e062f1ea36522aeac6c737e9847dc9d32e55abb5
     "skewProtection": false
 };
 const _exports = createExports(_manifest, _args);

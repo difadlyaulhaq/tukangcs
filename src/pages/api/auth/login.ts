@@ -1,17 +1,29 @@
 // src/pages/api/auth/login.ts
 import type { APIRoute } from "astro";
-import { adminAuth, adminDb } from "../../../lib/firebase-admin"; // Fixed path for auth/login.ts
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   console.log('Login API called at:', new Date().toISOString());
-  console.log('Environment check:', {
-    NODE_ENV: import.meta.env.NODE_ENV,
-    FIREBASE_PROJECT_ID: import.meta.env.FIREBASE_PROJECT_ID ? '✓' : '✗'
-  });
   
   try {
+    // Dynamic import untuk menghindari masalah init
+    const { adminAuth, adminDb } = await import("../../../lib/firebase-admin");
+    
+    if (!adminAuth || !adminDb) {
+      console.error('Firebase Admin not initialized');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Service tidak tersedia saat ini"
+        }),
+        { 
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
     const body = await request.json();
     const { email, password } = body;
 
@@ -28,12 +40,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // For login, we need to use Firebase client SDK to authenticate
-    // But since we're on the server, we need to verify with a custom token approach
-    // or use Firebase Auth REST API
-    
     // Using Firebase Auth REST API for email/password authentication
-    const apiKey = "AIzaSyD_b0lWXcpnNbSRIt1v9A1jCgCsfXWI6Zw"; // From your config
+    const apiKey = "AIzaSyD_b0lWXcpnNbSRIt1v9A1jCgCsfXWI6Zw";
     const authResponse = await fetch(
       `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`,
       {
@@ -139,7 +147,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Terjadi kesalahan saat login"
+        error: "Terjadi kesalahan saat login",
+        debug: process.env.NODE_ENV === 'development' ? error.message : undefined
       }),
       { 
         status: 500,

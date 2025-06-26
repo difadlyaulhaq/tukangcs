@@ -44,6 +44,18 @@
 			"dest": "_render"
 		},
 		{
+			"src": "^/api/whatsapp/connect/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/whatsapp/messages/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/whatsapp/send/?$",
+			"dest": "_render"
+		},
+		{
 			"src": "^/contact/?$",
 			"dest": "_render"
 		},

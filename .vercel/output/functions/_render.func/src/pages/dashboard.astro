@@ -687,18 +687,31 @@
                     <p>Hubungkan dan kelola akun media sosial Anda dalam satu dashboard.</p>
 
                     <div class="social-platform connected whatsapp">
+                        <!-- Tambahkan di bagian WhatsApp pada dashboard -->
+                        <div class="social-platform disconnected whatsapp" id="wa-platform">
                         <div class="platform-info">
                             <span class="platform-icon"><i class="fab fa-whatsapp"></i></span>
                             <div>
-                                <h4>WhatsApp Business</h4>
-                                <p>+62 812-3456-7890</p>
+                            <h4>WhatsApp Business</h4>
+                            <p id="wa-phone">Belum terhubung</p>
                             </div>
                         </div>
                         <div>
-                            <span class="status-badge status-connected">Terhubung</span>
-                            <button class="btn btn-secondary" style="margin-left: 0.5rem;">
-                                <i class="fas fa-cog"></i> Kelola
+                            <span class="status-badge status-disconnected" id="wa-status">Terputus</span>
+                            <button class="btn" id="wa-connect-btn" style="margin-left: 0.5rem;">
+                            <i class="fas fa-link"></i> Hubungkan
                             </button>
+                        </div>
+                        </div>
+
+                        <!-- Modal QR Code -->
+                        <div id="wa-qr-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; align-items: center; justify-content: center;">
+                        <div style="background: white; padding: 2rem; border-radius: 12px; text-align: center;">
+                            <h3 style="margin-bottom: 1rem;">Scan QR Code</h3>
+                            <div id="wa-qr-img"></div>
+                            <p style="margin-top: 1rem;">Scan QR code ini dengan WhatsApp di perangkat Anda</p>
+                            <button class="btn" style="margin-top: 1rem;" onclick="document.getElementById('wa-qr-modal').style.display='none'">Tutup</button>
+                        </div>
                         </div>
                     </div>
 
@@ -1091,65 +1104,706 @@
             }
         });
     });
+    
 </script>
 <script type="module">
 document.addEventListener("DOMContentLoaded", async () => {
-  // Profil
+  // Loading state
+  const showLoading = (show = true) => {
+    const elements = [
+      "user-email", "user-nama", "user-sektor", "user-sosmed", "user-bergabung",
+      "stat-pesan-masuk", "stat-respon-otomatis", "stat-perlu-perhatian"
+    ];
+    
+    elements.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = show ? "Memuat..." : "-";
+      }
+    });
+    
+    const aktivitasList = document.getElementById("aktivitas-terbaru");
+    if (aktivitasList) {
+      aktivitasList.innerHTML = show ? 
+        '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat aktivitas...</div>' : 
+        '<div style="text-align: center; color: #666;">Tidak ada aktivitas terbaru</div>';
+    }
+  };
+  
+  // Show loading initially
+  showLoading(true);
+
+  // Element references
   const emailEl = document.getElementById("user-email");
   const namaEl = document.getElementById("user-nama");
   const sektorEl = document.getElementById("user-sektor");
   const sosmedEl = document.getElementById("user-sosmed");
   const bergabungEl = document.getElementById("user-bergabung");
 
-  // Statistik
   const pesanMasukEl = document.getElementById("stat-pesan-masuk");
   const responOtomatisEl = document.getElementById("stat-respon-otomatis");
   const perluPerhatianEl = document.getElementById("stat-perlu-perhatian");
 
-  // Aktivitas terbaru
   const aktivitasList = document.getElementById("aktivitas-terbaru");
 
   try {
-    const res = await fetch("/api/dashboard-data");
+    const res = await fetch("/api/dashboard-data", {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      }
+    });
+    
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+    
     const data = await res.json();
     console.log("DATA DASHBOARD:", data);
 
-    if (emailEl) emailEl.textContent = data.user.email || "-";
-    if (namaEl) namaEl.textContent = data.user.nama_umkm || "-";
-    if (sektorEl) sektorEl.textContent = data.user.sektor || "-";
+    // Update profil dengan fallback
+    if (emailEl) emailEl.textContent = data.user?.email || "demo@example.com";
+    if (namaEl) namaEl.textContent = data.user?.nama_umkm || "Demo UMKM";
+    if (sektorEl) sektorEl.textContent = data.user?.sektor || "Demo Sektor";
+    
     if (sosmedEl) {
-      const sosmed = data.user.sosmed;
-      sosmedEl.textContent = Array.isArray(sosmed) ? sosmed.join(", ") : (sosmed || "-");
+      const sosmed = data.user?.sosmed;
+      if (Array.isArray(sosmed)) {
+        sosmedEl.textContent = sosmed.join(", ");
+      } else if (sosmed) {
+        sosmedEl.textContent = sosmed;
+      } else {
+        sosmedEl.textContent = "Instagram, WhatsApp";
+      }
     }
-    if (bergabungEl) bergabungEl.textContent = data.user.bergabung || "-";
+    
+    if (bergabungEl) bergabungEl.textContent = data.user?.bergabung || new Date().toLocaleDateString("id-ID");
 
-    if (pesanMasukEl) pesanMasukEl.textContent = data.stats.pesanMasuk ?? "0";
-    if (responOtomatisEl) responOtomatisEl.textContent = data.stats.responOtomatis ?? "0";
-    if (perluPerhatianEl) perluPerhatianEl.textContent = data.stats.perluPerhatian ?? "0";
+    // Update statistik
+    if (pesanMasukEl) pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
+    if (responOtomatisEl) responOtomatisEl.textContent = String(data.stats?.responOtomatis ?? 0);
+    if (perluPerhatianEl) perluPerhatianEl.textContent = String(data.stats?.perluPerhatian ?? 0);
 
-    if (aktivitasList && data.stats.pesanTerbaru) {
-      aktivitasList.innerHTML = "";
-      data.stats.pesanTerbaru.forEach((item) => {
-        let icon = "fa-comment", bg = "#667eea";
-        if (item.status === "otomatis") { icon = "fa-check-circle"; bg = "#28a745"; }
-        if (item.status === "perlu_perhatian") { icon = "fa-exclamation-triangle"; bg = "#ffc107"; }
-        aktivitasList.innerHTML += `
-          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.2rem;">
-            <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-              <i class="fas ${icon}"></i>
-            </div>
-            <div>
-              <div style="font-weight: 500;">${item.status === "otomatis" ? "Respon otomatis terkirim" : item.status === "perlu_perhatian" ? "Pesan perlu perhatian" : "Pesan baru dari " + item.nama}</div>
-              <div style="color: #666; font-size: 0.9rem;">"${item.isi}" - ${new Date(item.waktu).toLocaleString("id-ID")}</div>
-            </div>
+    // Update aktivitas terbaru
+    if (aktivitasList) {
+      const pesanTerbaru = data.stats?.pesanTerbaru || [];
+      
+      if (pesanTerbaru.length === 0) {
+        aktivitasList.innerHTML = `
+          <div style="text-align: center; color: #666; padding: 2rem;">
+            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <div>Belum ada aktivitas terbaru</div>
           </div>
         `;
-      });
+      } else {
+        aktivitasList.innerHTML = "";
+        
+        pesanTerbaru.forEach((item, index) => {
+          let icon = "fa-comment";
+          let bg = "#667eea";
+          let statusText = "Pesan baru";
+          
+          if (item.status === "otomatis") { 
+            icon = "fa-check-circle"; 
+            bg = "#28a745"; 
+            statusText = "Respon otomatis terkirim";
+          } else if (item.status === "perlu_perhatian") { 
+            icon = "fa-exclamation-triangle"; 
+            bg = "#ffc107"; 
+            statusText = "Pesan perlu perhatian";
+          } else {
+            statusText = `Pesan baru dari ${item.nama || "Customer"}`;
+          }
+          
+          // Format waktu
+          let waktuFormatted = "Baru saja";
+          try {
+            const waktu = new Date(item.waktu);
+            if (!isNaN(waktu.getTime())) {
+              waktuFormatted = waktu.toLocaleString("id-ID", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit"
+              });
+            }
+          } catch (e) {
+            console.warn("Error formatting date:", e);
+          }
+          
+          // Potong pesan jika terlalu panjang
+          const isiPesan = (item.isi || "No message").length > 100 ? 
+            (item.isi || "No message").substring(0, 100) + "..." : 
+            (item.isi || "No message");
+          
+          aktivitasList.innerHTML += `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: ${index < pesanTerbaru.length - 1 ? '1.2rem' : '0'};">
+              <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="fas ${icon}"></i>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 500; margin-bottom: 4px;">${statusText}</div>
+                <div style="color: #666; font-size: 0.9rem; line-height: 1.4;">
+                  "${isiPesan}"
+                  <br>
+                  <span style="font-size: 0.8rem; color: #999;">${waktuFormatted}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
     }
+
   } catch (err) {
-    // Handle error
+    console.error("Dashboard loading error:", err);
+    
+    // Show error state dengan data fallback
+    showLoading(false);
+    
+    // Set fallback data
+    if (emailEl) emailEl.textContent = "demo@example.com";
+    if (namaEl) namaEl.textContent = "Demo UMKM";
+    if (sektorEl) sektorEl.textContent = "Demo Sektor";
+    if (sosmedEl) sosmedEl.textContent = "Instagram, WhatsApp";
+    if (bergabungEl) bergabungEl.textContent = new Date().toLocaleDateString("id-ID");
+    
+    if (pesanMasukEl) pesanMasukEl.textContent = "0";
+    if (responOtomatisEl) responOtomatisEl.textContent = "0";
+    if (perluPerhatianEl) perluPerhatianEl.textContent = "0";
+    
+    if (aktivitasList) {
+      aktivitasList.innerHTML = `
+        <div style="text-align: center; color: #dc3545; padding: 2rem;">
+          <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+          <div style="margin-bottom: 0.5rem;">Gagal memuat data dashboard</div>
+          <div style="font-size: 0.9rem; color: #666;">
+            ${err.message || "Terjadi kesalahan saat mengambil data"}
+          </div>
+          <button onclick="location.reload()" style="
+            margin-top: 1rem; 
+            padding: 0.5rem 1rem; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+          ">
+            <i class="fas fa-refresh"></i> Muat Ulang
+          </button>
+        </div>
+      `;
+    }
+    
+    // Optional: Show toast notification
+    const showErrorToast = () => {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc3545;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 1000;
+        animation: slideIn 0.3s ease;
+      `;
+      toast.innerHTML = `
+        <i class="fas fa-exclamation-circle"></i>
+        Gagal memuat dashboard. Menggunakan data demo.
+      `;
+      
+      // Add animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+      document.body.appendChild(toast);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 5000);
+    };
+    
+    showErrorToast();
   }
 });
+</script>
+<script>
+// WhatsApp Connection Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const waPlatform = document.getElementById("wa-platform");
+  const waStatus = document.getElementById("wa-status");
+  const waPhone = document.getElementById("wa-phone");
+  const waConnectBtn = document.getElementById("wa-connect-btn");
+  const waQrModal = document.getElementById("wa-qr-modal");
+  const waQrImg = document.getElementById("wa-qr-img");
+
+  async function fetchWAStatus() {
+    try {
+      const res = await fetch("/api/whatsapp/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "status" })
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (data.data.connected) {
+          if (waPlatform) waPlatform.classList.remove("disconnected");
+          if (waPlatform) waPlatform.classList.add("connected");
+          if (waStatus) {
+            waStatus.className = "status-badge status-connected";
+            waStatus.textContent = "Terhubung";
+          }
+          if (waPhone) waPhone.textContent = data.data.phoneNumber || "Tersambung";
+          if (waConnectBtn) waConnectBtn.style.display = "none";
+          if (waQrModal) waQrModal.style.display = "none";
+        } else {
+          if (waPlatform) waPlatform.classList.remove("connected");
+          if (waPlatform) waPlatform.classList.add("disconnected");
+          if (waStatus) {
+            waStatus.className = "status-badge status-disconnected";
+            waStatus.textContent = "Terputus";
+          }
+          if (waPhone) waPhone.textContent = "Belum terhubung";
+          if (waConnectBtn) waConnectBtn.style.display = "";
+          // Jika ada QR code, tampilkan modal QR
+          if (data.data.qr) {
+            showWAQR(data.data.qr);
+          }
+        }
+      }
+    } catch (err) {
+      if (waStatus) {
+        waStatus.textContent = "Gagal cek status";
+        waStatus.className = "status-badge status-disconnected";
+      }
+      if (waPhone) waPhone.textContent = "Error";
+      if (waConnectBtn) waConnectBtn.style.display = "";
+    }
+  }
+
+  function showWAQR(qr: string) {
+    if (waQrModal) waQrModal.style.display = "flex";
+    if (waQrImg) waQrImg.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qr)}" alt="QR WhatsApp" style="width:250px; height:250px;" />`;
+  }
+
+  if (waConnectBtn) {
+    waConnectBtn.onclick = async () => {
+      if (waStatus) {
+        waStatus.textContent = "Menghubungkan...";
+        waStatus.className = "status-badge status-disconnected";
+      }
+      (waConnectBtn as HTMLButtonElement).disabled = true;
+      try {
+        const res = await fetch("/api/whatsapp/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "connect" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (waStatus) waStatus.textContent = "Menunggu QR...";
+          // Polling status untuk QR code
+          let tries = 0;
+          const poll = setInterval(async () => {
+            tries++;
+            const res = await fetch("/api/whatsapp/connect", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "status" })
+            });
+            const statusData = await res.json();
+            if (statusData.success && statusData.data) {
+              if (statusData.data.connected) {
+                clearInterval(poll);
+                if (waStatus) {
+                  waStatus.textContent = "Terhubung";
+                  waStatus.className = "status-badge status-connected";
+                }
+                if (waConnectBtn) waConnectBtn.style.display = "none";
+                if (waQrModal) waQrModal.style.display = "none";
+                fetchWAStatus();
+              } else if (statusData.data.qr) {
+                showWAQR(statusData.data.qr);
+              }
+            }
+            if (tries > 30) clearInterval(poll); // Stop polling after 30x
+          }, 2000);
+        } else {
+          if (waStatus) waStatus.textContent = "Gagal menghubungkan";
+          (waConnectBtn as HTMLButtonElement).disabled = false;
+        }
+      } catch (err) {
+        if (waStatus) waStatus.textContent = "Gagal menghubungkan";
+        (waConnectBtn as HTMLButtonElement).disabled = false;
+      }
+    };
+  }
+
+  // Cek status saat halaman dibuka
+  fetchWAStatus();
+  // Optional: polling status setiap 30 detik
+  setInterval(fetchWAStatus, 30000);
+});
+</script>
+<script>
+    // Frontend TypeScript untuk integrasi WhatsApp
+interface WhatsAppStatus {
+  connected: boolean;
+  connecting?: boolean;
+  phoneNumber?: string;
+  qr?: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  message?: string;
+  data?: WhatsAppStatus;
+}
+
+type NotificationType = 'success' | 'error' | 'warning' | 'info';
+type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
+
+class WhatsAppManager {
+  private statusCheckInterval: number | null;
+  private isConnecting: boolean;
+
+  constructor() {
+    this.statusCheckInterval = null;
+    this.isConnecting = false;
+    this.init();
+  }
+
+  private init(): void {
+    // Bind event listeners
+    const connectBtn = document.getElementById('wa-connect-btn');
+    if (connectBtn) {
+      connectBtn.addEventListener('click', () => this.handleConnect());
+    }
+
+    // Check initial status
+    this.checkStatus();
+    
+    // Start periodic status checking
+    this.startStatusPolling();
+  }
+
+  private async handleConnect(): Promise<void> {
+    if (this.isConnecting) return;
+    
+    try {
+      this.isConnecting = true;
+      this.updateUI('connecting');
+      
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'connect' })
+      });
+
+      const result: APIResponse = await response.json();
+      
+      if (result.success) {
+        console.log('Connection initiated:', result);
+        this.showNotification('Menghubungkan ke WhatsApp...', 'info');
+        
+        // Start checking for QR code
+        this.startQRPolling();
+      } else {
+        console.error('Connection failed:', result);
+        this.showNotification('Gagal menghubungkan: ' + result.message, 'error');
+        this.updateUI('disconnected');
+      }
+    } catch (error) {
+      console.error('Connection error:', error);
+      this.showNotification('Terjadi kesalahan saat menghubungkan', 'error');
+      this.updateUI('disconnected');
+    } finally {
+      this.isConnecting = false;
+    }
+  }
+
+  async checkStatus() {
+    try {
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'status' })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        const status = result.data;
+        
+        if (status.connected) {
+          this.updateUI('connected', status.phoneNumber);
+          this.hideQRModal();
+        } else if (status.connecting) {
+          this.updateUI('connecting');
+          if (status.qr) {
+            this.showQRCode(status.qr);
+          }
+        } else {
+          this.updateUI('disconnected');
+          this.hideQRModal();
+        }
+      }
+    } catch (error) {
+      console.error('Status check error:', error);
+    }
+  }
+
+  startStatusPolling() {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+    
+    this.statusCheckInterval = window.setInterval(() => {
+      this.checkStatus();
+    }, 5000); // Check every 5 seconds
+  }
+
+  startQRPolling() {
+    const qrCheckInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/whatsapp/connect', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action: 'status' })
+        });
+
+        const result = await response.json();
+        
+        if (result.success) {
+          const status = result.data;
+          
+          if (status.connected) {
+            clearInterval(qrCheckInterval);
+            this.updateUI('connected', status.phoneNumber);
+            this.hideQRModal();
+            this.showNotification('WhatsApp berhasil terhubung!', 'success');
+          } else if (status.qr) {
+            this.showQRCode(status.qr);
+          }
+        }
+      } catch (error) {
+        console.error('QR polling error:', error);
+        clearInterval(qrCheckInterval);
+      }
+    }, 2000); // Check for QR every 2 seconds
+
+    // Stop polling after 2 minutes
+    setTimeout(() => {
+      clearInterval(qrCheckInterval);
+      const statusElement = document.getElementById('wa-status');
+      if (statusElement && statusElement.textContent && !statusElement.textContent.includes('Terhubung')) {
+        this.updateUI('disconnected');
+        this.hideQRModal();
+        this.showNotification('Waktu koneksi habis. Silakan coba lagi.', 'warning');
+      }
+    }, 120000);
+  }
+
+  updateUI(status: ConnectionStatus, phoneNumber: string | null = null) {
+    const statusElement = document.getElementById('wa-status');
+    const phoneElement = document.getElementById('wa-phone');
+    const buttonElement = document.getElementById('wa-connect-btn');
+    const platformElement = document.getElementById('wa-platform');
+
+    if (!statusElement || !phoneElement || !buttonElement || !platformElement) {
+      console.error('Required UI elements not found');
+      return;
+    }
+
+    switch (status) {
+      case 'connected':
+        statusElement.textContent = 'Terhubung';
+        statusElement.className = 'status-badge status-connected';
+        phoneElement.textContent = phoneNumber || 'Terhubung';
+        buttonElement.innerHTML = '<i class="fas fa-unlink"></i> Putuskan';
+        buttonElement.onclick = () => this.disconnect();
+        platformElement.className = 'social-platform connected whatsapp';
+        break;
+
+      case 'connecting':
+        statusElement.textContent = 'Menghubungkan...';
+        statusElement.className = 'status-badge status-connecting';
+        phoneElement.textContent = 'Menghubungkan...';
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghubungkan...';
+        const connectingButton = buttonElement;
+        if (connectingButton instanceof HTMLButtonElement) {
+          connectingButton.disabled = true;
+        }
+        platformElement.className = 'social-platform connecting whatsapp';
+        break;
+
+      case 'disconnected':
+      default:
+        statusElement.textContent = 'Terputus';
+        statusElement.className = 'status-badge status-disconnected';
+        phoneElement.textContent = 'Belum terhubung';
+        buttonElement.innerHTML = '<i class="fas fa-link"></i> Hubungkan';
+        const disconnectedButton = buttonElement;
+        if (disconnectedButton instanceof HTMLButtonElement) {
+          disconnectedButton.disabled = false;
+        }
+        buttonElement.onclick = () => this.handleConnect();
+        platformElement.className = 'social-platform disconnected whatsapp';
+        break;
+    }
+  }
+
+  showQRCode(qrDataURL: string) {
+    const modal = document.getElementById('wa-qr-modal');
+    const qrImg = document.getElementById('wa-qr-img');
+    
+    if (modal && qrImg) {
+      qrImg.innerHTML = `<img src="${qrDataURL}" alt="QR Code" style="max-width: 256px; max-height: 256px;">`;
+      modal.style.display = 'flex';
+    }
+  }
+
+  hideQRModal() {
+    const modal = document.getElementById('wa-qr-modal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+  }
+
+  async disconnect() {
+    try {
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'disconnect' })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        this.updateUI('disconnected');
+        this.hideQRModal();
+        this.showNotification('WhatsApp berhasil diputuskan', 'success');
+      } else {
+        this.showNotification('Gagal memutuskan koneksi: ' + result.message, 'error');
+      }
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      this.showNotification('Terjadi kesalahan saat memutuskan koneksi', 'error');
+    }
+  }
+
+  showNotification(message: string, type: NotificationType = 'info') {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('wa-notification');
+    if (!notification) {
+      notification = document.createElement('div');
+      notification.id = 'wa-notification';
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        max-width: 300px;
+      `;
+      document.body.appendChild(notification);
+    }
+
+    // Set notification style based on type
+    const colors: Record<NotificationType, string> = {
+      success: '#10b981',
+      error: '#ef4444',
+      warning: '#f59e0b',
+      info: '#3b82f6'
+    };
+
+    const colorKey: NotificationType = type;
+    const backgroundColor = colors[colorKey] || colors.info;
+    notification.style.backgroundColor = backgroundColor;
+    notification.textContent = message;
+    notification.style.opacity = '1';
+
+    // Hide after 5 seconds
+    setTimeout(() => {
+      notification.style.opacity = '0';
+    }, 5000);
+  }
+
+  destroy() {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+  }
+}
+
+// Extend Window interface for TypeScript compatibility
+declare global {
+  interface Window {
+    whatsappManager: WhatsAppManager;
+  }
+}
+
+// Initialize WhatsApp manager when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.whatsappManager = new WhatsAppManager();
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (window.whatsappManager) {
+    window.whatsappManager.destroy();
+  }
+});
+
+// Add CSS styles for status classes
+const style = document.createElement('style');
+style.textContent = `
+  .status-connecting {
+    background-color: #f59e0b;
+    color: white;
+  }
+  
+  .social-platform.connecting {
+    border-left: 4px solid #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+  
+  .fa-spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>

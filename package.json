@@ -11,12 +11,16 @@
   "dependencies": {
     "@astrojs/netlify": "^6.4.0",
     "@astrojs/svelte": "^7.1.0",
-    "@astrojs/vercel": "^8.2.0",
+    "@astrojs/vercel": "^8.0.4",
+    "@hapi/boom": "^10.0.1",
     "@supabase/supabase-js": "^2.50.0",
     "@vercel/analytics": "^1.5.0",
+    "@whiskeysockets/baileys": "^6.7.18",
     "astro": "^5.9.2",
+    "dotenv": "^16.5.0",
     "firebase": "^11.9.1",
-    "firebase-admin": "^13.4.0",
+    "firebase-admin": "^12.7.0",
+    "qrcode": "^1.5.4",
     "svelte": "^5.30.2",
     "typescript": "^5.8.3"
   }

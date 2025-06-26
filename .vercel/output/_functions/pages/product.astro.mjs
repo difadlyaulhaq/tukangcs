@@ -1,6 +1,6 @@
 import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate } from '../chunks/astro/server_BmReEcGK.mjs';
 import 'kleur/colors';
-import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_5O4tyabJ.mjs';
+import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_CZ2ykVmt.mjs';
 /* empty css                                   */
 export { renderers } from '../renderers.mjs';
 
@@ -50,10 +50,10 @@ Mulai transformasi digital customer service Anda hari ini
 🚀 Mulai Gratis
 </button> <button class="btn-secondary" data-astro-cid-7wxsvid2>
 📞 Hubungi Sales
-</button> </div> </div> </div> </div> </section> <!-- Footer --> <footer data-astro-cid-7wxsvid2> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-7wxsvid2": true })} </footer> ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/pages/product.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
-}, "D:/project/web/tukangcs/absent-accretion/src/pages/product.astro", void 0);
+</button> </div> </div> </div> </div> </section> <!-- Footer --> <footer data-astro-cid-7wxsvid2> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-7wxsvid2": true })} </footer> ${renderScript($$result, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/product.astro?astro&type=script&index=0&lang.ts")} </body> </html>`;
+}, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/product.astro", void 0);
 
-const $$file = "D:/project/web/tukangcs/absent-accretion/src/pages/product.astro";
+const $$file = "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/product.astro";
 const $$url = "/product";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({

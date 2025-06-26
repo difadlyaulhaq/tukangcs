@@ -1,14 +1,23 @@
-import { a as adminAuth, b as adminDb } from '../../../chunks/firebase-admin_CZtLfzeI.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 const prerender = false;
 const POST = async ({ request, cookies }) => {
   console.log("Login API called at:", (/* @__PURE__ */ new Date()).toISOString());
-  console.log("Environment check:", {
-    NODE_ENV: process.env.NODE_ENV,
-    FIREBASE_PROJECT_ID: "✓" 
-  });
   try {
+    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_2Mivys7W.mjs');
+    if (!adminAuth || !adminDb) {
+      console.error("Firebase Admin not initialized");
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Service tidak tersedia saat ini"
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
     const body = await request.json();
     const { email, password } = body;
     if (!email || !password) {
@@ -114,7 +123,8 @@ const POST = async ({ request, cookies }) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Terjadi kesalahan saat login"
+        error: "Terjadi kesalahan saat login",
+        debug: process.env.NODE_ENV === "development" ? error.message : void 0
       }),
       {
         status: 500,
