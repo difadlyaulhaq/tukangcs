@@ -1,6 +1,6 @@
 import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate } from '../chunks/astro/server_BmReEcGK.mjs';
 import 'kleur/colors';
-import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_5O4tyabJ.mjs';
+import { $ as $$Navbar, a as $$Footer } from '../chunks/footer_CZ2ykVmt.mjs';
 /* empty css                                   */
 export { renderers } from '../renderers.mjs';
 
@@ -23,10 +23,10 @@ const $$Contact = createComponent(($$result, $$props, $$slots) => {
                     <span class="ebay-logo">ebay</span>
                 </div>
             </div>
-        </div> --> </div> </section> <!-- Footer --> <footer data-astro-cid-uw5kdbxl> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-uw5kdbxl": true })} ${renderScript($$result, "D:/project/web/tukangcs/absent-accretion/src/pages/contact.astro?astro&type=script&index=0&lang.ts")} </footer> </body></html>`;
-}, "D:/project/web/tukangcs/absent-accretion/src/pages/contact.astro", void 0);
+        </div> --> </div> </section> <!-- Footer --> <footer data-astro-cid-uw5kdbxl> ${renderComponent($$result, "Footer", $$Footer, { "data-astro-cid-uw5kdbxl": true })} ${renderScript($$result, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/contact.astro?astro&type=script&index=0&lang.ts")} </footer> </body></html>`;
+}, "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/contact.astro", void 0);
 
-const $$file = "D:/project/web/tukangcs/absent-accretion/src/pages/contact.astro";
+const $$file = "D:/Perkuliahan/Perlombaan/ITFest/tukangcs/src/pages/contact.astro";
 const $$url = "/contact";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
