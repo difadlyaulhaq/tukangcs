@@ -16,25 +16,30 @@ function initFirebaseAdmin() {
     return app;
   }
 
-  // Ambil environment variables
-  const serviceAccount = {
-    type: "service_account",
-    project_id: import.meta.env.FIREBASE_PROJECT_ID,
-    private_key_id: import.meta.env.FIREBASE_PRIVATE_KEY_ID,
-    private_key: import.meta.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    client_email: import.meta.env.FIREBASE_CLIENT_EMAIL,
-    client_id: import.meta.env.FIREBASE_CLIENT_ID || "",
-    auth_uri: "https://accounts.google.com/o/oauth2/auth",
-    token_uri: "https://oauth2.googleapis.com/token",
-    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
-  };
-
-  // Validasi environment variables
-  if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
-    throw new Error('Firebase Admin: Environment variables tidak lengkap');
-  }
-
   try {
+    // Ambil environment variables dengan fallback
+    const serviceAccount = {
+      type: "service_account",
+      project_id: process.env.FIREBASE_PROJECT_ID || import.meta.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || import.meta.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: (process.env.FIREBASE_PRIVATE_KEY || import.meta.env.FIREBASE_PRIVATE_KEY)?.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL || import.meta.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID || import.meta.env.FIREBASE_CLIENT_ID || "",
+      auth_uri: "https://accounts.google.com/o/oauth2/auth",
+      token_uri: "https://oauth2.googleapis.com/token",
+      auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+    };
+
+    // Validasi environment variables
+    if (!serviceAccount.project_id || !serviceAccount.private_key || !serviceAccount.client_email) {
+      console.error('Firebase Admin: Environment variables tidak lengkap', {
+        project_id: !!serviceAccount.project_id,
+        private_key: !!serviceAccount.private_key,
+        client_email: !!serviceAccount.client_email
+      });
+      throw new Error('Firebase Admin: Environment variables tidak lengkap');
+    }
+
     app = initializeApp({
       credential: cert(serviceAccount as any),
       projectId: serviceAccount.project_id,
@@ -48,6 +53,18 @@ function initFirebaseAdmin() {
   }
 }
 
-// Export services
-export const adminAuth = getAuth(initFirebaseAdmin());
-export const adminDb = getFirestore(initFirebaseAdmin());
+// Export services dengan error handling
+let adminAuth: any = null;
+let adminDb: any = null;
+
+try {
+  adminAuth = getAuth(initFirebaseAdmin());
+  adminDb = getFirestore(initFirebaseAdmin());
+} catch (error) {
+  console.error('Failed to initialize Firebase Admin services:', error);
+  // Set fallback values to prevent further errors
+  adminAuth = null;
+  adminDb = null;
+}
+
+export { adminAuth, adminDb };

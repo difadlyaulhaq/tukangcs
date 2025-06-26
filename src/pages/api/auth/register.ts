@@ -1,11 +1,29 @@
-// src/pages/api/register.ts
+// src/pages/api/auth/register.ts
 import type { APIRoute } from "astro";
-import { adminAuth, adminDb } from "../../../lib/firebase-admin"; // Fixed path for auth/login.ts
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
+    console.log('Register API called at:', new Date().toISOString());
+
+    // Dynamic import untuk menghindari masalah init
+    const { adminAuth, adminDb } = await import("../../../lib/firebase-admin");
+    
+    if (!adminAuth || !adminDb) {
+      console.error('Firebase Admin not initialized');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Service tidak tersedia saat ini"
+        }),
+        { 
+          status: 500,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+    }
+
     const body = await request.json();
     const { email, password, nama_umkm, sektor, sosmed } = body;
 
@@ -81,7 +99,8 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: errorMessage
+        error: errorMessage,
+        debug: process.env.NODE_ENV === 'development' ? error.message : undefined
       }),
       { 
         status: 500,
