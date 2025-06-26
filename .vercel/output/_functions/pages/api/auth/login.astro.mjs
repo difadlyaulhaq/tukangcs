@@ -4,7 +4,7 @@ const prerender = false;
 const POST = async ({ request, cookies }) => {
   console.log("Login API called at:", (/* @__PURE__ */ new Date()).toISOString());
   try {
-    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_w9s0bARV.mjs');
+    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_CQamzRmh.mjs');
     if (!adminAuth || !adminDb) {
       console.error("Firebase Admin not initialized");
       return new Response(
