@@ -3,6 +3,10 @@ import { initializeApp, cert, getApps, getApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 
+// Tambahkan console.log untuk debugging
+console.log("Project ID:", process.env.FIREBASE_PROJECT_ID);
+console.log("Client Email exists:", !!process.env.FIREBASE_CLIENT_EMAIL);
+console.log("Private Key exists:", !!process.env.FIREBASE_PRIVATE_KEY);
 // Singleton untuk serverless environment
 let app: any = null;
 
