@@ -936,176 +936,120 @@
         <i class="fas fa-check-circle"></i>
         <span>Action completed successfully!</span>
     </div>
-
-<script>
-    // Toggle sidebar on mobile
-    function toggleSidebar(): void {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        if (sidebar) {
-            sidebar.classList.toggle('open');
-        }
-        if (overlay) {
-            overlay.classList.toggle('visible');
-        }
-    }
-    (window as any).toggleSidebar = toggleSidebar;
-
-    // Close sidebar
-    function closeSidebar(): void {
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        if (sidebar) {
-            sidebar.classList.remove('open');
-        }
-        if (overlay) {
-            overlay.classList.remove('visible');
-        }
-    }
-    (window as any).closeSidebar = closeSidebar;
-
-    // Sidebar navigation function
-    function showSection(sectionId: string, event: MouseEvent) {
-        event.preventDefault();
-
-        // Hide all sections
-        const sections = document.querySelectorAll('.content-section');
-        sections.forEach(section => section.classList.remove('active'));
-
-        // Show selected section
-        const targetSection = document.getElementById(sectionId);
-        if (targetSection) {
-            targetSection.classList.add('active');
-        }
-
-        // Remove active from all menu links
-        const menuLinks = document.querySelectorAll('.menu-link');
-        menuLinks.forEach(link => link.classList.remove('active'));
-
-        // Add active to clicked menu
-        if (event.currentTarget) {
-            (event.currentTarget as HTMLElement).classList.add('active');
-        }
-
-        // Close sidebar on mobile
-        if (window.innerWidth <= 992) {
-            closeSidebar();
-        }
-    }
-    (window as any).showSection = showSection;
-
-    // Logout function
-    function logout(): void {
-        if (confirm('Apakah Anda yakin ingin logout?')) {
-            showNotification('Logout berhasil!', 'success');
-            setTimeout(() => {
-                window.location.href = '/api/auth/signout';
-            }, 1500);
-        }
-    }
-    (window as any).logout = logout;
-
-    // Connect platform
-    function connectPlatform(platform: string): void {
-        showNotification(`Menghubungkan ${platform}...`, 'success');
-        setTimeout(() => {
-            showNotification(`${platform} berhasil terhubung!`, 'success');
-        }, 1500);
-    }
-    (window as any).connectPlatform = connectPlatform;
-
-    // Generate word cloud
-    function generateWordCloud(): void {
-        const container = document.getElementById('wordcloudContainer');
-        if (!container) return;
-
-        container.innerHTML = `
-            <div style="text-align: center; color: #667eea;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-spinner fa-spin"></i></div>
-                <h3>Generating Word Cloud...</h3>
-                <p>Sedang menganalisis data pelanggan</p>
-            </div>
-        `;
-
-        setTimeout(() => {
-            if (container) {
-                container.innerHTML = `
-                    <div style="text-align: center; line-height: 2; padding: 20px;">
-                        <span style="font-size: 2.5rem; color: #28a745; margin: 0.5rem;">BAGUS</span>
-                        <span style="font-size: 1.8rem; color: #667eea; margin: 0.5rem;">PELAYANAN</span>
-                        <span style="font-size: 2.2rem; color: #ffc107; margin: 0.5rem;">CEPAT</span>
-                        <br>
-                        <span style="font-size: 1.5rem; color: #dc3545; margin: 0.5rem;">MAHAL</span>
-                        <span style="font-size: 3rem; color: #28a745; margin: 0.5rem;">PUAS</span>
-                        <span style="font-size: 1.6rem; color: #667eea; margin: 0.5rem;">BERKUALITAS</span>
-                        <br>
-                        <span style="font-size: 1.8rem; color: #ffc107; margin: 0.5rem;">RAMAH</span>
-                        <span style="font-size: 1.4rem; color: #28a745; margin: 0.5rem;">REKOMENDASI</span>
-                        <span style="font-size: 2rem; color: #667eea; margin: 0.5rem;">TERPERCAYA</span>
-                        <br>
-                        <span style="font-size: 1.3rem; color: #dc3545; margin: 0.5rem;">LAMBAT</span>
-                        <span style="font-size: 2.4rem; color: #28a745; margin: 0.5rem;">MANTAP</span>
-                        <span style="font-size: 1.7rem; color: #ffc107; margin: 0.5rem;">LENGKAP</span>
-                    </div>
-                `;
-                showNotification('Word Cloud berhasil dibuat!', 'success');
-            }
-        }, 2000);
-    }
-    (window as any).generateWordCloud = generateWordCloud;
-
-    // Show notification
-    function showNotification(message: string, type: string): void {
-        const notification = document.getElementById('notification');
-        if (!notification) return;
-
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <span>${message}</span>
-        `;
-        notification.className = `notification show ${type}`;
-
-        setTimeout(() => {
-            notification.classList.remove('show');
-        }, 3000);
-    }
-    (window as any).showNotification = showNotification;
-
-    // Handle file upload
-    document.addEventListener('DOMContentLoaded', function(): void {
-        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
-        if (fileInput) {
-            fileInput.addEventListener('change', function(e: Event): void {
-                const target = e.target as HTMLInputElement;
-                if (target && target.files) {
-                    const files = Array.from(target.files);
-                    if (files.length > 0) {
-                        showNotification(`${files.length} file berhasil dipilih untuk diupload!`, 'success');
-                    }
-                }
-            });
-        }
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(e: Event): void {
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.querySelector('.mobile-menu-toggle') as HTMLElement;
-
-            if (window.innerWidth <= 992 &&
-                sidebar &&
-                toggleBtn &&
-                e.target &&
-                e.target !== sidebar &&
-                !sidebar.contains(e.target as Node) &&
-                e.target !== toggleBtn &&
-                !toggleBtn.contains(e.target as Node) &&
-                sidebar.classList.contains('open')) {
-                closeSidebar();
-            }
-        });
-    });
+    <script>
+      // --- FUNGSI UNTUK NAVIGASI DAN UI ---
     
-</script>
+      // Menampilkan/menyembunyikan sidebar pada tampilan mobile
+      function toggleSidebar() {
+        document.getElementById('sidebar')?.classList.toggle('active');
+        document.getElementById('overlay')?.classList.toggle('active');
+      }
+    
+      // Menutup sidebar saat area luar (overlay) diklik
+      function closeSidebar() {
+        document.getElementById('sidebar')?.classList.remove('active');
+        document.getElementById('overlay')?.classList.remove('active');
+      }
+    
+      // Berpindah antar-section di dashboard (Dashboard, Media Sosial, dll.)
+      function showSection(sectionId, event) {
+        // Sembunyikan semua section
+        document.querySelectorAll('.content-section').forEach(section => {
+          section.classList.remove('active');
+        });
+        // Tampilkan section yang dipilih
+        document.getElementById(sectionId)?.classList.add('active');
+    
+        // Atur style 'active' pada menu sidebar
+        document.querySelectorAll('.sidebar-menu .menu-link').forEach(link => {
+          link.classList.remove('active');
+        });
+        event.currentTarget.classList.add('active');
+        
+        // Otomatis tutup sidebar setelah memilih menu (berguna di mobile)
+        closeSidebar();
+      }
+    
+      // --- FUNGSI LOGOUT ---
+      function logout() {
+        // 1. Hapus data sesi dari localStorage
+        localStorage.removeItem('supabase_session');
+        localStorage.removeItem('supabase_user');
+        
+        // 2. Arahkan browser ke endpoint signout di server.
+        // Server akan menghapus cookie sesi dan mengarahkan ke halaman login.
+        window.location.href = '/api/auth/signout';
+      }
+    
+      // --- MEMBUAT FUNGSI AGAR BISA DIAKSES DARI HTML (`onclick`) ---
+      // Ini adalah bagian penting untuk mengatasi error "is not defined"
+      window.toggleSidebar = toggleSidebar;
+      window.closeSidebar = closeSidebar;
+      window.showSection = showSection;
+      window.logout = logout;
+    
+      // --- LOGIKA SAAT HALAMAN SELESAI DIMUAT ---
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Fungsi untuk menampilkan status "Memuat..."
+        const showLoading = (show = true) => {
+          const elementsToLoad = [
+            "user-email", "user-nama", "user-sektor", "user-sosmed", "user-bergabung",
+            "stat-pesan-masuk", "stat-respon-otomatis", "stat-perlu-perhatian"
+          ];
+          elementsToLoad.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = show ? "Memuat..." : "-";
+          });
+          const aktivitasList = document.getElementById("aktivitas-terbaru");
+          if (aktivitasList) {
+            aktivitasList.innerHTML = show 
+              ? '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>'
+              : '<div style="text-align: center; color: #666;">Tidak ada aktivitas.</div>';
+          }
+        };
+    
+        showLoading(true);
+    
+        try {
+          const res = await fetch("/api/dashboard-data");
+          if (!res.ok) throw new Error(`Gagal memuat data: ${res.statusText}`);
+          const data = await res.json();
+    
+          // Update UI dengan data yang diterima
+          document.getElementById("user-email").textContent = data.user?.email || "-";
+          document.getElementById("user-nama").textContent = data.user?.nama_umkm || "-";
+          document.getElementById("user-sektor").textContent = data.user?.sektor || "-";
+          document.getElementById("user-sosmed").textContent = Array.isArray(data.user?.sosmed) ? data.user.sosmed.join(", ") : (data.user?.sosmed || "-");
+          document.getElementById("user-bergabung").textContent = data.user?.bergabung || "-";
+          document.getElementById("stat-pesan-masuk").textContent = String(data.stats?.pesanMasuk ?? 0);
+          document.getElementById("stat-respon-otomatis").textContent = String(data.stats?.responOtomatis ?? 0);
+          document.getElementById("stat-perlu-perhatian").textContent = String(data.stats?.perluPerhatian ?? 0);
+          
+          const aktivitasList = document.getElementById("aktivitas-terbaru");
+          if (aktivitasList) {
+            if (data.stats?.pesanTerbaru?.length > 0) {
+              aktivitasList.innerHTML = data.stats.pesanTerbaru.map(item => `
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1rem;">
+                  <div style="background: #667eea; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-comment"></i>
+                  </div>
+                  <div>
+                    <div>Pesan dari <strong>${item.nama || 'Unknown'}</strong></div>
+                    <div style="font-size: 0.9rem; color: #666;">"${(item.isi || "").substring(0, 50)}..."</div>
+                  </div>
+                </div>
+              `).join('');
+            } else {
+              showLoading(false); // Menampilkan "Tidak ada aktivitas"
+            }
+          }
+    
+        } catch (err) {
+          console.error("Gagal memuat data dashboard:", err);
+          showLoading(false); // Menghilangkan status "Memuat..."
+        }
+      });
+    </script>
 <script type="module">
 document.addEventListener("DOMContentLoaded", async () => {
   // Loading state

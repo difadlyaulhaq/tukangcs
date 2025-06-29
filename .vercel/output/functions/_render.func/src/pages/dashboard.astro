@@ -995,15 +995,15 @@
     (window as any).showSection = showSection;
 
     // Logout function
-    function logout(): void {
-        if (confirm('Apakah Anda yakin ingin logout?')) {
-            showNotification('Logout berhasil!', 'success');
-            setTimeout(() => {
-                window.location.href = '/api/auth/signout';
-            }, 1500);
+    function logout() {
+          // Hapus data sesi dari localStorage terlebih dahulu
+          localStorage.removeItem('supabase_session');
+          localStorage.removeItem('supabase_user');
+
+          // Arahkan browser ke endpoint signout.
+          // Server akan menghapus cookie dan melakukan redirect ke halaman login.
+          window.location.href = '/api/auth/signout';
         }
-    }
-    (window as any).logout = logout;
 
     // Connect platform
     function connectPlatform(platform: string): void {
