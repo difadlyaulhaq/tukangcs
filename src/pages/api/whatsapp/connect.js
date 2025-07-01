@@ -8,19 +8,35 @@ export const POST = async ({ request }) => {
     console.log('WhatsApp connect API called');
     
     const body = await request.json();
-    const { action } = body;
+    const { action, phoneNumber, usePairingCode } = body;
     console.log('Action:', action);
+    console.log('Phone Number:', phoneNumber);
+    console.log('Use Pairing Code:', usePairingCode);
 
     switch (action) {
       case 'connect':
         try {
           console.log('Starting WhatsApp connection...');
-          await whatsappManager.connect();
+          
+          // Validasi nomor telepon jika menggunakan pairing code
+          if (usePairingCode && !phoneNumber) {
+            return new Response(JSON.stringify({ 
+              success: false, 
+              message: 'Phone number is required for pairing code connection'
+            }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" }
+            });
+          }
+
+          const result = await whatsappManager.connect(phoneNumber, usePairingCode);
           
           return new Response(JSON.stringify({ 
             success: true, 
-            message: 'WhatsApp connection initiated',
-            data: whatsappManager.getConnectionStatus()
+            message: result.message || 'WhatsApp connection initiated',
+            data: result.status || whatsappManager.getConnectionStatus(),
+            pairingCode: result.pairingCode || null,
+            qr: result.qr || null
           }), {
             status: 200,
             headers: { "Content-Type": "application/json" }
@@ -85,10 +101,49 @@ export const POST = async ({ request }) => {
           });
         }
 
+      case 'generate-pairing-code':
+        try {
+          if (!phoneNumber) {
+            return new Response(JSON.stringify({ 
+              success: false, 
+              message: 'Phone number is required for pairing code generation'
+            }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" }
+            });
+          }
+
+          console.log('Generating pairing code for:', phoneNumber);
+          const result = await whatsappManager.generatePairingCode(phoneNumber);
+          
+          return new Response(JSON.stringify({ 
+            success: true, 
+            message: 'Pairing code generated successfully',
+            data: {
+              pairingCode: result.pairingCode,
+              phoneNumber: result.phoneNumber,
+              ...whatsappManager.getConnectionStatus()
+            }
+          }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" }
+          });
+        } catch (pairingError) {
+          console.error('Pairing code error:', pairingError);
+          return new Response(JSON.stringify({ 
+            success: false, 
+            message: 'Failed to generate pairing code',
+            error: pairingError.message
+          }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          });
+        }
+
       default:
         return new Response(JSON.stringify({ 
           success: false, 
-          message: 'Invalid action. Valid actions: connect, disconnect, status' 
+          message: 'Invalid action. Valid actions: connect, disconnect, status, generate-pairing-code' 
         }), {
           status: 400,
           headers: { "Content-Type": "application/json" }
