@@ -1,0 +1,551 @@
+<script>
+// WhatsApp Connection Logic
+// WhatsApp Connection Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const waPlatform = document.getElementById("wa-platform");
+  const waStatus = document.getElementById("wa-status");
+  const waPhone = document.getElementById("wa-phone");
+  const waConnectBtn = document.getElementById("wa-connect-btn");
+  const waQrModal = document.getElementById("wa-qr-modal");
+  const waQrImg = document.getElementById("wa-qr-img");
+
+  async function fetchWAStatus() {
+    try {
+      const res = await fetch("/api/whatsapp/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "status" })
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (data.data.connected) {
+          waPlatform?.classList.remove("disconnected");
+          waPlatform?.classList.add("connected");
+          if (waStatus) {
+            waStatus.className = "status-badge status-connected";
+            waStatus.textContent = "Terhubung";
+          }
+          if (waPhone) waPhone.textContent = data.data.phoneNumber || "Tersambung";
+          if (waConnectBtn) waConnectBtn.style.display = "none";
+          if (waQrModal) waQrModal.style.display = "none";
+        } else {
+          waPlatform?.classList.remove("connected");
+          waPlatform?.classList.add("disconnected");
+          if (waStatus) {
+            waStatus.className = "status-badge status-disconnected";
+            waStatus.textContent = "Terputus";
+          }
+          if (waPhone) waPhone.textContent = "Belum terhubung";
+          if (waConnectBtn) waConnectBtn.style.display = "";
+          // Jika ada QR code, tampilkan modal QR
+          if (data.data.qr) {
+            showWAQR(data.data.qr);
+          }
+        }
+      }
+    } catch (err) {
+      if (waStatus) {
+        waStatus.textContent = "Gagal cek status";
+        waStatus.className = "status-badge status-disconnected";
+      }
+      if (waPhone) waPhone.textContent = "Error";
+      if (waConnectBtn) waConnectBtn.style.display = "";
+    }
+  }
+
+  function showWAQR(qr: string) {
+    if (waQrModal) waQrModal.style.display = "flex";
+    if (waQrImg) waQrImg.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(qr)}" alt="QR WhatsApp" style="width:250px; height:250px;" />`;
+  }
+
+  if (waConnectBtn) {
+    waConnectBtn.onclick = async () => {
+      if (waStatus) {
+        waStatus.textContent = "Menghubungkan...";
+        waStatus.className = "status-badge status-disconnected";
+      }
+      (waConnectBtn as HTMLButtonElement).disabled = true;
+      try {
+        const res = await fetch("/api/whatsapp/connect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "connect" })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (waStatus) waStatus.textContent = "Menunggu QR...";
+          // Polling status untuk QR code
+          let tries = 0;
+          const poll = setInterval(async () => {
+            tries++;
+            const res = await fetch("/api/whatsapp/connect", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "status" })
+            });
+            const statusData = await res.json();
+            if (statusData.success && statusData.data) {
+              if (statusData.data.connected) {
+                clearInterval(poll);
+                if (waStatus) {
+                  waStatus.textContent = "Terhubung";
+                  waStatus.className = "status-badge status-connected";
+                }
+                if (waConnectBtn) waConnectBtn.style.display = "none";
+                if (waQrModal) waQrModal.style.display = "none";
+                fetchWAStatus();
+              } else if (statusData.data.qr) {
+                showWAQR(statusData.data.qr);
+              }
+            }
+            if (tries > 30) clearInterval(poll); // Stop polling after 30x
+          }, 2000);
+        } else {
+          if (waStatus) waStatus.textContent = "Gagal menghubungkan";
+          (waConnectBtn as HTMLButtonElement).disabled = false;
+        }
+      } catch (err) {
+        if (waStatus) waStatus.textContent = "Gagal menghubungkan";
+        (waConnectBtn as HTMLButtonElement).disabled = false;
+      }
+    };
+  }
+
+  // Cek status saat halaman dibuka
+  fetchWAStatus();
+  // Optional: polling status setiap 30 detik
+  setInterval(fetchWAStatus, 30000);
+});
+
+// Frontend TypeScript untuk integrasi WhatsApp
+interface WhatsAppStatus {
+  connected: boolean;
+  connecting?: boolean;
+  phoneNumber?: string;
+  qr?: string;
+  pairingCode?: string;
+}
+
+interface APIResponse {
+  success: boolean;
+  message?: string;
+  data?: WhatsAppStatus;
+}
+
+type NotificationType = 'success' | 'error' | 'warning' | 'info';
+type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';
+
+class WhatsAppManager {
+  private statusCheckInterval: NodeJS.Timeout | null = null;
+  private isConnecting: boolean = false;
+
+  constructor() {
+    this.init();
+  }
+
+  init(): void {
+    // Bind event listeners
+    const pairingBtn = document.getElementById('wa-pairing-btn');
+    const qrBtn = document.getElementById('wa-qr-btn');
+    const phoneCancel = document.getElementById('wa-phone-cancel');
+    const phoneGenerate = document.getElementById('wa-phone-generate');
+    const pairingClose = document.getElementById('wa-pairing-close');
+    const qrClose = document.getElementById('wa-qr-close');
+
+    pairingBtn?.addEventListener('click', () => this.showPhoneModal());
+    qrBtn?.addEventListener('click', () => this.connectWithQR());
+    phoneCancel?.addEventListener('click', () => this.hidePhoneModal());
+    phoneGenerate?.addEventListener('click', () => this.generatePairingCode());
+    pairingClose?.addEventListener('click', () => this.hidePairingModal());
+    qrClose?.addEventListener('click', () => this.hideQRModal());
+
+    // Check initial status
+    this.checkStatus();
+    this.startStatusPolling();
+  }
+
+  showPhoneModal(): void {
+    const modal = document.getElementById('wa-phone-modal');
+    const input = document.getElementById('wa-phone-input') as HTMLInputElement;
+    
+    if (modal) modal.style.display = 'flex';
+    input?.focus();
+  }
+
+  hidePhoneModal(): void {
+    const modal = document.getElementById('wa-phone-modal');
+    const input = document.getElementById('wa-phone-input') as HTMLInputElement;
+    
+    if (modal) modal.style.display = 'none';
+    if (input) input.value = '';
+  }
+
+  async generatePairingCode(): Promise<void> {
+    const phoneInput = document.getElementById('wa-phone-input') as HTMLInputElement;
+    const phoneNumber = phoneInput?.value?.trim() || '';
+
+    if (!phoneNumber) {
+      this.showNotification('Nomor telepon harus diisi', 'error');
+      return;
+    }
+
+    try {
+      this.updateUI('connecting');
+      this.hidePhoneModal();
+
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'generate-pairing-code',
+          phoneNumber: phoneNumber
+        })
+      });
+
+      const result: APIResponse = await response.json();
+
+      if (result.success && result.data?.pairingCode) {
+        this.showPairingCode(result.data.pairingCode, result.data.phoneNumber || phoneNumber);
+        this.showNotification('Kode pairing berhasil dibuat', 'success');
+        
+        // Start polling for connection
+        this.startConnectionPolling();
+      } else {
+        this.showNotification('Gagal membuat kode pairing: ' + (result.message || 'Unknown error'), 'error');
+        this.updateUI('disconnected');
+      }
+    } catch (error) {
+      console.error('Pairing code error:', error);
+      this.showNotification('Terjadi kesalahan saat membuat kode pairing', 'error');
+      this.updateUI('disconnected');
+    }
+  }
+
+  showPairingCode(code: string, phoneNumber: string): void {
+    const phoneEl = document.getElementById('wa-pairing-phone');
+    const codeEl = document.getElementById('wa-pairing-code');
+    const modal = document.getElementById('wa-pairing-modal');
+    
+    if (phoneEl) phoneEl.textContent = phoneNumber;
+    if (codeEl) codeEl.textContent = code;
+    if (modal) modal.style.display = 'flex';
+  }
+
+  hidePairingModal(): void {
+    const modal = document.getElementById('wa-pairing-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async connectWithQR(): Promise<void> {
+    try {
+      this.updateUI('connecting');
+      
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'connect',
+          usePairingCode: false
+        })
+      });
+
+      const result: APIResponse = await response.json();
+
+      if (result.success) {
+        this.showNotification('Menghubungkan dengan QR Code...', 'info');
+        this.startQRPolling();
+      } else {
+        this.showNotification('Gagal menghubungkan: ' + (result.message || 'Unknown error'), 'error');
+        this.updateUI('disconnected');
+      }
+    } catch (error) {
+      console.error('QR connection error:', error);
+      this.showNotification('Terjadi kesalahan saat menghubungkan', 'error');
+      this.updateUI('disconnected');
+    }
+  }
+
+  startQRPolling(): void {
+    const qrCheckInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/whatsapp/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'status' })
+        });
+
+        const result: APIResponse = await response.json();
+
+        if (result.success && result.data) {
+          const status = result.data;
+
+          if (status.connected) {
+            clearInterval(qrCheckInterval);
+            this.updateUI('connected', status.phoneNumber);
+            this.hideQRModal();
+            this.showNotification('WhatsApp berhasil terhubung!', 'success');
+          } else if (status.qr) {
+            this.showQRCode(status.qr);
+          }
+        }
+      } catch (error) {
+        console.error('QR polling error:', error);
+        clearInterval(qrCheckInterval);
+      }
+    }, 2000);
+
+    // Stop polling after 2 minutes
+    setTimeout(() => {
+      clearInterval(qrCheckInterval);
+      this.hideQRModal();
+      if (!this.isConnected()) {
+        this.updateUI('disconnected');
+        this.showNotification('Waktu koneksi habis. Silakan coba lagi.', 'warning');
+      }
+    }, 120000);
+  }
+
+  showQRCode(qrData: string): void {
+    const qrImg = document.getElementById('wa-qr-img');
+    const modal = document.getElementById('wa-qr-modal');
+    
+    if (qrImg) {
+      qrImg.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(qrData)}" alt="QR Code" style="max-width: 256px; max-height: 256px;">`;
+    }
+    if (modal) modal.style.display = 'flex';
+  }
+
+  hideQRModal(): void {
+    const modal = document.getElementById('wa-qr-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  startConnectionPolling(): void {
+    const connectionCheckInterval = setInterval(async () => {
+      try {
+        const response = await fetch('/api/whatsapp/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'status' })
+        });
+
+        const result: APIResponse = await response.json();
+
+        if (result.success && result.data?.connected) {
+          clearInterval(connectionCheckInterval);
+          this.updateUI('connected', result.data.phoneNumber);
+          this.hidePairingModal();
+          this.showNotification('WhatsApp berhasil terhubung!', 'success');
+        }
+      } catch (error) {
+        console.error('Connection polling error:', error);
+        clearInterval(connectionCheckInterval);
+      }
+    }, 3000);
+
+    // Stop polling after 5 minutes
+    setTimeout(() => {
+      clearInterval(connectionCheckInterval);
+      if (!this.isConnected()) {
+        this.hidePairingModal();
+        this.updateUI('disconnected');
+        this.showNotification('Waktu koneksi pairing habis. Silakan coba lagi.', 'warning');
+      }
+    }, 300000);
+  }
+
+  async checkStatus(): Promise<void> {
+    try {
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'status' })
+      });
+
+      const result: APIResponse = await response.json();
+
+      if (result.success && result.data) {
+        const status = result.data;
+
+        if (status.connected) {
+          this.updateUI('connected', status.phoneNumber);
+        } else if (status.connecting) {
+          this.updateUI('connecting');
+        } else {
+          this.updateUI('disconnected');
+        }
+      }
+    } catch (error) {
+      console.error('Status check error:', error);
+    }
+  }
+
+  startStatusPolling(): void {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+
+    this.statusCheckInterval = setInterval(() => {
+      this.checkStatus();
+    }, 10000); // Check every 10 seconds
+  }
+
+  updateUI(status: ConnectionStatus, phoneNumber?: string): void {
+    const statusElement = document.getElementById('wa-status');
+    const phoneElement = document.getElementById('wa-phone');
+    const connectionMethods = document.getElementById('wa-connection-methods');
+    const platformElement = document.getElementById('wa-platform');
+
+    switch (status) {
+      case 'connected':
+        if (statusElement) {
+          statusElement.textContent = 'Terhubung';
+          statusElement.className = 'status-badge status-connected';
+        }
+        if (phoneElement) phoneElement.textContent = phoneNumber || 'Terhubung';
+        if (connectionMethods) {
+          connectionMethods.innerHTML = '<button class="btn" onclick="whatsappManager.disconnect()"><i class="fas fa-unlink"></i> Putuskan</button>';
+        }
+        if (platformElement) platformElement.className = 'social-platform connected';
+        break;
+
+      case 'connecting':
+        if (statusElement) {
+          statusElement.textContent = 'Menghubungkan...';
+          statusElement.className = 'status-badge status-connecting';
+        }
+        if (phoneElement) phoneElement.textContent = 'Menghubungkan...';
+        if (connectionMethods) {
+          connectionMethods.innerHTML = '<button class="btn" disabled><i class="fas fa-spinner spinner"></i> Menghubungkan...</button>';
+        }
+        if (platformElement) platformElement.className = 'social-platform connecting';
+        break;
+
+      case 'disconnected':
+      default:
+        if (statusElement) {
+          statusElement.textContent = 'Terputus';
+          statusElement.className = 'status-badge status-disconnected';
+        }
+        if (phoneElement) phoneElement.textContent = 'Belum terhubung';
+        if (connectionMethods) {
+          connectionMethods.innerHTML = `
+            <button class="btn btn-primary" id="wa-pairing-btn">
+              <i class="fas fa-mobile-alt"></i> Pairing Code
+            </button>
+            <button class="btn" id="wa-qr-btn">
+              <i class="fas fa-qrcode"></i> QR Code
+            </button>
+          `;
+        }
+        if (platformElement) platformElement.className = 'social-platform disconnected';
+        
+        // Re-bind events
+        const pairingBtn = document.getElementById('wa-pairing-btn');
+        const qrBtn = document.getElementById('wa-qr-btn');
+        pairingBtn?.addEventListener('click', () => this.showPhoneModal());
+        qrBtn?.addEventListener('click', () => this.connectWithQR());
+        break;
+    }
+  }
+
+  async disconnect(): Promise<void> {
+    try {
+      const response = await fetch('/api/whatsapp/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'disconnect' })
+      });
+
+      const result: APIResponse = await response.json();
+
+      if (result.success) {
+        this.updateUI('disconnected');
+        this.showNotification('WhatsApp berhasil diputuskan', 'success');
+      } else {
+        this.showNotification('Gagal memutuskan koneksi: ' + (result.message || 'Unknown error'), 'error');
+      }
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      this.showNotification('Terjadi kesalahan saat memutuskan koneksi', 'error');
+    }
+  }
+
+  isConnected(): boolean {
+    const statusElement = document.getElementById('wa-status');
+    return statusElement?.textContent === 'Terhubung';
+  }
+
+  showNotification(message: string, type: NotificationType = 'info'): void {
+    let notification = document.getElementById('notification');
+    if (!notification) {
+      notification = document.createElement('div');
+      notification.id = 'notification';
+      notification.className = 'notification';
+      document.body.appendChild(notification);
+    }
+
+    notification.className = `notification ${type} show`;
+    notification.textContent = message;
+
+    setTimeout(() => {
+      notification!.className = `notification ${type}`;
+    }, 5000);
+  }
+
+  destroy(): void {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+  }
+}
+
+// Extend Window interface for TypeScript compatibility
+declare global {
+  interface Window {
+    toggleSidebar: () => void;
+    closeSidebar: () => void;
+    showSection: (sectionId: string, event: MouseEvent) => void;
+    logout: () => void;
+    whatsappManager?: WhatsAppManager;
+  }
+}
+
+// Initialize WhatsApp manager when DOM is loaded
+let whatsappManager: WhatsAppManager;
+document.addEventListener('DOMContentLoaded', () => {
+  whatsappManager = new WhatsAppManager();
+  window.whatsappManager = whatsappManager;
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+  if (whatsappManager) {
+    whatsappManager.destroy();
+  }
+});
+
+// Add CSS styles for status classes
+const style = document.createElement('style');
+style.textContent = `
+  .status-connecting {
+    background-color: #f59e0b;
+    color: white;
+  }
+  
+  .social-platform.connecting {
+    border-left: 4px solid #f59e0b;
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+  
+  .fa-spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
+document.head.appendChild(style);
+</script>
