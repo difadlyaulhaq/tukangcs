@@ -1,4 +1,4 @@
-// services/whatsapp-service.js
+// services/whatsapp-service.js - IMPROVED VERSION
 import { Boom } from '@hapi/boom';
 import NodeCache from 'node-cache';
 import pino from 'pino';
@@ -11,6 +11,8 @@ import {
   delay,
 } from '@whiskeysockets/baileys';
 import { adminDb } from '../lib/firebase-admin.js';
+import fs from 'fs';
+import path from 'path';
 
 // Cache untuk menyimpan sessions
 const msgRetryCounterCache = new NodeCache();
@@ -23,16 +25,25 @@ class WhatsAppService {
     this.connected = false;
     this.connecting = false;
     this.phoneNumber = null;
-    this.logger = pino({ level: 'silent' }); // Silent logger untuk production
+    this.logger = pino({ level: 'silent' });
     this.sessionId = 'whatsapp-session';
     this.authState = null;
     this.saveCreds = null;
-    this.usePairingCode = true; // Default menggunakan pairing code
-    this.targetPhoneNumber = null; // Nomor untuk pairing code
+    this.usePairingCode = true;
+    this.targetPhoneNumber = null;
+    this.connectionPromise = null; // Track ongoing connection
+    this.maxRetries = 3;
+    this.currentRetry = 0;
   }
 
   async initialize(phoneNumber = null, usePairingCode = true) {
     try {
+      // Prevent multiple simultaneous connections
+      if (this.connectionPromise) {
+        console.log('Connection already in progress, waiting...');
+        return await this.connectionPromise;
+      }
+
       if (this.connected) {
         console.log('WhatsApp already connected');
         return {
@@ -42,161 +53,242 @@ class WhatsAppService {
         };
       }
 
-      if (this.connecting) {
-        console.log('WhatsApp connection in progress');
-        return {
-          success: true,
-          message: 'Connection in progress',
-          status: this.getConnectionStatus()
-        };
+      // Create connection promise to prevent race conditions
+      this.connectionPromise = this._doInitialize(phoneNumber, usePairingCode);
+      
+      try {
+        const result = await this.connectionPromise;
+        return result;
+      } finally {
+        this.connectionPromise = null;
       }
 
-      this.connecting = true;
-      this.usePairingCode = usePairingCode;
-      this.targetPhoneNumber = phoneNumber;
-      
-      console.log('Initializing WhatsApp connection...');
-      console.log('Using pairing code:', this.usePairingCode);
-      console.log('Target phone number:', this.targetPhoneNumber);
-
-      // Setup auth state
-      const { state, saveCreds } = await useMultiFileAuthState('./auth_info');
-      this.authState = state;
-      this.saveCreds = saveCreds;
-
-      // Get latest Baileys version
-      const { version, isLatest } = await fetchLatestBaileysVersion();
-      console.log(`Using Baileys v${version.join('.')}, isLatest: ${isLatest}`);
-
-      // Create socket
-      this.sock = makeWASocket({
-        version,
-        logger: this.logger,
-        printQRInTerminal: !this.usePairingCode, // Hanya print QR jika tidak pakai pairing code
-        auth: {
-          creds: state.creds,
-          keys: makeCacheableSignalKeyStore(state.keys, this.logger),
-        },
-        msgRetryCounterCache,
-        generateHighQualityLinkPreview: true,
-        shouldIgnoreJid: jid => isJidBroadcast(jid),
-        // Konfigurasi tambahan untuk stabilitas
-        keepAliveIntervalMs: 10000,
-        connectTimeoutMs: 60000,
-        defaultQueryTimeoutMs: 60000,
-        retryRequestDelayMs: 250,
-        maxMsgRetryCount: 5,
-        // Browser info untuk pairing code
-        browser: ['Ubuntu', 'Chrome', '20.0.04'],
-      });
-
-      this.setupEventHandlers();
-
-      return new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => {
-          this.connecting = false;
-          reject(new Error('Connection timeout'));
-        }, 60000); // 60 detik timeout
-
-        // Handle initial connection update
-        const handleInitialConnection = (update) => {
-          const { connection, lastDisconnect, qr } = update;
-
-          if (qr && !this.usePairingCode) {
-            this.qr = qr;
-            console.log('QR Code generated');
-            resolve({
-              success: true,
-              message: 'QR Code generated',
-              qr: qr,
-              status: this.getConnectionStatus()
-            });
-          }
-
-          if (connection === 'open') {
-            clearTimeout(timeout);
-            this.connected = true;
-            this.connecting = false;
-            this.qr = null;
-            this.pairingCode = null;
-            console.log('WhatsApp connected successfully');
-            
-            // Remove listener after successful connection
-            this.sock.ev.off('connection-update', handleInitialConnection);
-            
-            resolve({
-              success: true,
-              message: 'Connected successfully',
-              status: this.getConnectionStatus()
-            });
-          }
-
-          if (connection === 'close') {
-            clearTimeout(timeout);
-            this.connected = false;
-            this.connecting = false;
-            const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            
-            // Remove listener
-            this.sock.ev.off('connection-update', handleInitialConnection);
-            
-            if (shouldReconnect) {
-              console.log('Connection closed, attempting to reconnect...');
-              setTimeout(() => this.initialize(this.targetPhoneNumber, this.usePairingCode), 3000);
-              resolve({
-                success: false,
-                message: 'Connection closed, reconnecting...',
-                status: this.getConnectionStatus()
-              });
-            } else {
-              console.log('Connection closed, logged out');
-              reject(new Error('Logged out from WhatsApp'));
-            }
-          }
-        };
-
-        this.sock.ev.on('connection-update', handleInitialConnection);
-
-        // Generate pairing code jika menggunakan pairing code mode
-        if (this.usePairingCode && this.targetPhoneNumber && !state.creds.registered) {
-          setTimeout(async () => {
-            try {
-              // Format nomor telepon
-              let formattedNumber = this.targetPhoneNumber.replace(/\D/g, '');
-              
-              // Add country code if not present (untuk Indonesia)
-              if (!formattedNumber.startsWith('62') && formattedNumber.startsWith('0')) {
-                formattedNumber = '62' + formattedNumber.substring(1);
-              }
-              
-              console.log('Requesting pairing code for:', formattedNumber);
-              const code = await this.sock.requestPairingCode(formattedNumber);
-              this.pairingCode = code;
-              
-              console.log('Pairing code generated:', code);
-              
-              clearTimeout(timeout);
-              resolve({
-                success: true,
-                message: 'Pairing code generated',
-                pairingCode: code,
-                phoneNumber: formattedNumber,
-                status: this.getConnectionStatus()
-              });
-            } catch (error) {
-              console.error('Failed to generate pairing code:', error);
-              clearTimeout(timeout);
-              reject(error);
-            }
-          }, 3000); // Wait 3 seconds for socket to be ready
-        }
-      });
-
     } catch (error) {
+      this.connectionPromise = null;
       this.connecting = false;
       console.error('Failed to initialize WhatsApp:', error);
       throw error;
     }
+  }
+
+  async _doInitialize(phoneNumber, usePairingCode) {
+    this.connecting = true;
+    this.usePairingCode = usePairingCode;
+    this.targetPhoneNumber = phoneNumber;
+    
+    console.log('Initializing WhatsApp connection...');
+    console.log('Using pairing code:', this.usePairingCode);
+    console.log('Target phone number:', this.targetPhoneNumber);
+
+    // Ensure auth directory exists
+    const authDir = './auth_info';
+    if (!fs.existsSync(authDir)) {
+      fs.mkdirSync(authDir, { recursive: true });
+    }
+
+    // Setup auth state with better error handling
+    try {
+      const { state, saveCreds } = await useMultiFileAuthState(authDir);
+      this.authState = state;
+      this.saveCreds = saveCreds;
+    } catch (authError) {
+      console.error('Auth state error:', authError);
+      // Clear auth directory and try again
+      if (fs.existsSync(authDir)) {
+        fs.rmSync(authDir, { recursive: true, force: true });
+        fs.mkdirSync(authDir, { recursive: true });
+      }
+      const { state, saveCreds } = await useMultiFileAuthState(authDir);
+      this.authState = state;
+      this.saveCreds = saveCreds;
+    }
+
+    // Get latest Baileys version
+    const { version, isLatest } = await fetchLatestBaileysVersion();
+    console.log(`Using Baileys v${version.join('.')}, isLatest: ${isLatest}`);
+
+    // Create socket with improved configuration
+    this.sock = makeWASocket({
+      version,
+      logger: this.logger,
+      printQRInTerminal: !this.usePairingCode,
+      auth: {
+        creds: this.authState.creds,
+        keys: makeCacheableSignalKeyStore(this.authState.keys, this.logger),
+      },
+      msgRetryCounterCache,
+      generateHighQualityLinkPreview: true,
+      shouldIgnoreJid: jid => isJidBroadcast(jid),
+      // Improved connection settings
+      keepAliveIntervalMs: 30000, // Increased to 30 seconds
+      connectTimeoutMs: 120000, // Increased to 2 minutes
+      defaultQueryTimeoutMs: 60000,
+      retryRequestDelayMs: 1000, // Increased delay
+      maxMsgRetryCount: 3,
+      // Browser info for pairing code
+      browser: ['WhatsApp Manager', 'Chrome', '20.0.04'],
+      // Additional stability settings
+      syncFullHistory: false,
+      markOnlineOnConnect: true,
+    });
+
+    this.setupEventHandlers();
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        this.connecting = false;
+        this.connectionPromise = null;
+        reject(new Error('Connection timeout after 3 minutes'));
+      }, 180000); // 3 minutes timeout
+
+      let resolved = false;
+
+      const resolveOnce = (result) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          resolve(result);
+        }
+      };
+
+      const rejectOnce = (error) => {
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          reject(error);
+        }
+      };
+
+      // Handle initial connection update
+      const handleInitialConnection = (update) => {
+        const { connection, lastDisconnect, qr } = update;
+
+        console.log('Connection update:', { connection, qr: !!qr });
+
+        if (qr && !this.usePairingCode) {
+          this.qr = qr;
+          console.log('QR Code generated');
+          resolveOnce({
+            success: true,
+            message: 'QR Code generated',
+            qr: qr,
+            status: this.getConnectionStatus()
+          });
+        }
+
+        if (connection === 'open') {
+          this.connected = true;
+          this.connecting = false;
+          this.qr = null;
+          this.pairingCode = null;
+          this.currentRetry = 0;
+          console.log('WhatsApp connected successfully');
+          
+          // Remove listener after successful connection
+          this.sock.ev.off('connection-update', handleInitialConnection);
+          
+          resolveOnce({
+            success: true,
+            message: 'Connected successfully',
+            status: this.getConnectionStatus()
+          });
+        }
+
+        if (connection === 'close') {
+          this.connected = false;
+          this.connecting = false;
+          const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+          const statusCode = lastDisconnect?.error?.output?.statusCode;
+          
+          console.log('Connection closed, status code:', statusCode, 'shouldReconnect:', shouldReconnect);
+          
+          // Remove listener
+          this.sock.ev.off('connection-update', handleInitialConnection);
+          
+          if (shouldReconnect && this.currentRetry < this.maxRetries) {
+            console.log(`Connection closed, attempting to reconnect... (${this.currentRetry + 1}/${this.maxRetries})`);
+            this.currentRetry++;
+            setTimeout(() => {
+              this.initialize(this.targetPhoneNumber, this.usePairingCode).catch(console.error);
+            }, 5000);
+            
+            resolveOnce({
+              success: false,
+              message: 'Connection closed, reconnecting...',
+              status: this.getConnectionStatus()
+            });
+          } else {
+            console.log('Connection closed, not reconnecting');
+            rejectOnce(new Error(statusCode === DisconnectReason.loggedOut ? 'Logged out from WhatsApp' : 'Connection failed'));
+          }
+        }
+      };
+
+      this.sock.ev.on('connection-update', handleInitialConnection);
+
+      // Generate pairing code jika menggunakan pairing code mode
+      if (this.usePairingCode && this.targetPhoneNumber && !this.authState.creds.registered) {
+        // Wait longer for socket to be ready
+        setTimeout(async () => {
+          try {
+            // Check if socket is still valid
+            if (!this.sock || resolved) return;
+
+            // Format nomor telepon
+            let formattedNumber = this.targetPhoneNumber.replace(/\D/g, '');
+            
+            // Add country code if not present (untuk Indonesia)
+            if (!formattedNumber.startsWith('62') && formattedNumber.startsWith('0')) {
+              formattedNumber = '62' + formattedNumber.substring(1);
+            } else if (!formattedNumber.startsWith('62') && !formattedNumber.startsWith('0')) {
+              // Assume it's local number without 0
+              formattedNumber = '62' + formattedNumber;
+            }
+            
+            console.log('Requesting pairing code for:', formattedNumber);
+            
+            // Add retry mechanism for pairing code generation
+            let pairingCodeGenerated = false;
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (!pairingCodeGenerated && attempts < maxAttempts && !resolved) {
+              try {
+                attempts++;
+                console.log(`Pairing code attempt ${attempts}/${maxAttempts}`);
+                
+                const code = await this.sock.requestPairingCode(formattedNumber);
+                this.pairingCode = code;
+                pairingCodeGenerated = true;
+                
+                console.log('Pairing code generated successfully:', code);
+                
+                resolveOnce({
+                  success: true,
+                  message: 'Pairing code generated',
+                  pairingCode: code,
+                  phoneNumber: formattedNumber,
+                  status: this.getConnectionStatus()
+                });
+                
+              } catch (pairingError) {
+                console.error(`Pairing code attempt ${attempts} failed:`, pairingError);
+                
+                if (attempts >= maxAttempts) {
+                  rejectOnce(new Error(`Failed to generate pairing code after ${maxAttempts} attempts: ${pairingError.message}`));
+                } else {
+                  // Wait before retry
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Failed to generate pairing code:', error);
+            rejectOnce(error);
+          }
+        }, 5000); // Wait 5 seconds for socket to be ready
+      }
+    });
   }
 
   setupEventHandlers() {
@@ -205,9 +297,12 @@ class WhatsAppService {
     // Handle credentials update
     this.sock.ev.on('creds.update', this.saveCreds);
 
-    // Handle connection updates
+    // Handle connection updates (for ongoing connections)
     this.sock.ev.on('connection-update', async (update) => {
       const { connection, lastDisconnect, qr } = update;
+      
+      // Only handle if not in initial connection phase
+      if (this.connectionPromise) return;
       
       if (qr && !this.usePairingCode) {
         this.qr = qr;
@@ -225,6 +320,7 @@ class WhatsAppService {
         this.connecting = false;
         this.qr = null;
         this.pairingCode = null;
+        this.currentRetry = 0;
         
         // Get phone number info
         try {
@@ -243,14 +339,22 @@ class WhatsAppService {
         this.pairingCode = null;
         
         const shouldReconnect = lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut;
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        
         console.log('Connection closed due to:', lastDisconnect?.error, ', reconnecting:', shouldReconnect);
         
-        if (shouldReconnect) {
-          // Reconnect after delay
+        if (shouldReconnect && this.currentRetry < this.maxRetries) {
+          // Exponential backoff
+          const delay = Math.min(1000 * Math.pow(2, this.currentRetry), 30000);
+          this.currentRetry++;
+          
           setTimeout(() => {
-            console.log('Attempting to reconnect...');
+            console.log(`Attempting to reconnect... (${this.currentRetry}/${this.maxRetries})`);
             this.initialize(this.targetPhoneNumber, this.usePairingCode).catch(console.error);
-          }, 3000);
+          }, delay);
+        } else {
+          console.log('Max retries reached or logged out, stopping reconnection attempts');
+          this.currentRetry = 0;
         }
       }
     });
@@ -346,7 +450,7 @@ class WhatsAppService {
     try {
       await adminDb.collection('pesan').add({
         ...messageData,
-        userId: 'default-user', // Atau ambil dari context
+        userId: 'default-user',
         createdAt: new Date().toISOString()
       });
     } catch (error) {
@@ -370,6 +474,116 @@ class WhatsAppService {
     }
   }
 
+  getConnectionStatus() {
+    return {
+      connected: this.connected,
+      connecting: this.connecting,
+      qr: this.qr,
+      pairingCode: this.pairingCode,
+      phoneNumber: this.phoneNumber,
+      targetPhoneNumber: this.targetPhoneNumber,
+      usePairingCode: this.usePairingCode,
+      timestamp: new Date().toISOString(),
+      retryCount: this.currentRetry
+    };
+  }
+
+  async disconnect() {
+    try {
+      // Clear connection promise
+      this.connectionPromise = null;
+      
+      if (this.sock) {
+        await this.sock.logout();
+        this.sock.end();
+        this.sock = null;
+      }
+      
+      this.connected = false;
+      this.connecting = false;
+      this.qr = null;
+      this.pairingCode = null;
+      this.phoneNumber = null;
+      this.targetPhoneNumber = null;
+      this.currentRetry = 0;
+      
+      console.log('WhatsApp disconnected successfully');
+      return true;
+    } catch (error) {
+      console.error('Error disconnecting WhatsApp:', error);
+      throw error;
+    }
+  }
+
+  // Method untuk generate pairing code secara manual
+  async generatePairingCode(phoneNumber) {
+    try {
+      // Initialize socket if not exists
+      if (!this.sock) {
+        await this.initialize(phoneNumber, true);
+        // Wait for socket to be ready
+        let attempts = 0;
+        while (!this.sock && attempts < 10) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          attempts++;
+        }
+        
+        if (!this.sock) {
+          throw new Error('Socket not ready after initialization');
+        }
+      }
+
+      let formattedNumber = phoneNumber.replace(/\D/g, '');
+      
+      // Add country code if not present (untuk Indonesia)
+      if (!formattedNumber.startsWith('62') && formattedNumber.startsWith('0')) {
+        formattedNumber = '62' + formattedNumber.substring(1);
+      } else if (!formattedNumber.startsWith('62') && !formattedNumber.startsWith('0')) {
+        formattedNumber = '62' + formattedNumber;
+      }
+      
+      console.log('Generating pairing code for:', formattedNumber);
+      
+      // Retry mechanism for pairing code generation
+      let attempts = 0;
+      const maxAttempts = 3;
+      
+      while (attempts < maxAttempts) {
+        try {
+          attempts++;
+          console.log(`Pairing code attempt ${attempts}/${maxAttempts}`);
+          
+          const code = await this.sock.requestPairingCode(formattedNumber);
+          this.pairingCode = code;
+          this.targetPhoneNumber = formattedNumber;
+          
+          console.log('Pairing code generated successfully:', code);
+          
+          return {
+            success: true,
+            pairingCode: code,
+            phoneNumber: formattedNumber
+          };
+          
+        } catch (error) {
+          console.error(`Pairing code attempt ${attempts} failed:`, error);
+          
+          if (attempts >= maxAttempts) {
+            throw new Error(`Failed to generate pairing code after ${maxAttempts} attempts: ${error.message}`);
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+      
+    } catch (error) {
+      console.error('Failed to generate pairing code:', error);
+      throw error;
+    }
+  }
+
+  // Additional utility methods
   async sendImage(jid, imagePath, caption = '') {
     if (!this.connected || !this.sock) {
       throw new Error('WhatsApp not connected');
@@ -401,42 +615,6 @@ class WhatsAppService {
       return result;
     } catch (error) {
       console.error('Failed to send document:', error);
-      throw error;
-    }
-  }
-
-  getConnectionStatus() {
-    return {
-      connected: this.connected,
-      connecting: this.connecting,
-      qr: this.qr,
-      pairingCode: this.pairingCode,
-      phoneNumber: this.phoneNumber,
-      targetPhoneNumber: this.targetPhoneNumber,
-      usePairingCode: this.usePairingCode,
-      timestamp: new Date().toISOString()
-    };
-  }
-
-  async disconnect() {
-    try {
-      if (this.sock) {
-        await this.sock.logout();
-        this.sock.end();
-        this.sock = null;
-      }
-      
-      this.connected = false;
-      this.connecting = false;
-      this.qr = null;
-      this.pairingCode = null;
-      this.phoneNumber = null;
-      this.targetPhoneNumber = null;
-      
-      console.log('WhatsApp disconnected successfully');
-      return true;
-    } catch (error) {
-      console.error('Error disconnecting WhatsApp:', error);
       throw error;
     }
   }
@@ -504,36 +682,6 @@ class WhatsAppService {
     } catch (error) {
       console.error('Failed to check WhatsApp number:', error);
       return false;
-    }
-  }
-
-  // Method untuk generate pairing code secara manual
-  async generatePairingCode(phoneNumber) {
-    if (!this.sock) {
-      throw new Error('Socket not initialized');
-    }
-
-    try {
-      let formattedNumber = phoneNumber.replace(/\D/g, '');
-      
-      // Add country code if not present (untuk Indonesia)
-      if (!formattedNumber.startsWith('62') && formattedNumber.startsWith('0')) {
-        formattedNumber = '62' + formattedNumber.substring(1);
-      }
-      
-      console.log('Generating pairing code for:', formattedNumber);
-      const code = await this.sock.requestPairingCode(formattedNumber);
-      this.pairingCode = code;
-      this.targetPhoneNumber = formattedNumber;
-      
-      return {
-        success: true,
-        pairingCode: code,
-        phoneNumber: formattedNumber
-      };
-    } catch (error) {
-      console.error('Failed to generate pairing code:', error);
-      throw error;
     }
   }
 }
