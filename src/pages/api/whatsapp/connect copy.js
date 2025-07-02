@@ -4,6 +4,13 @@ import whatsappManager from "../../../lib/whatsapp-manager.js";
 export const prerender = false;
 
 export const POST = async ({ request }) => {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'This endpoint only supports POST requests'
+  }), {
+    status: 405,
+    headers: { "Content-Type": "application/json" }
+  });
   try {
     console.log('WhatsApp connect API called');
     

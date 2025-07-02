@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
 
     const authData = await authResponse.json();
-
+    console.log('Auth response:', authData);
     if (!authResponse.ok) {
       let errorMessage = "Login gagal";
       
@@ -117,6 +117,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       sameSite: "strict",
       maxAge: fiveDays / 1000,
     });
+
+    cookies.set("user_id", decodedToken.uid, {
+      path: "/",
+      maxAge: fiveDays / 1000,
+    })
 
     return new Response(
       JSON.stringify({
