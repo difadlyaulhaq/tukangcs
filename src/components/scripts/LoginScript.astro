@@ -60,7 +60,7 @@
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-
+      console.log('Login response:', data);
       if (res.ok && data.success) {
         // Store session data in localStorage for client-side access
         localStorage.setItem('firebase_session', JSON.stringify(data.session));

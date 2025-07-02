@@ -5,5 +5,11 @@ export const GET: APIRoute = async ({ redirect, cookies }) => {
   cookies.delete("__session", {
     path: "/",
   });
+  cookies.delete("sessionId", {
+    path: "/",
+  });
+  cookies.delete("session", {
+    path: "/",
+  });
   return redirect("/");
 };

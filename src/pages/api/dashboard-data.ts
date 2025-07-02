@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { adminAuth } from "src/lib/firebase-admin";
+import { jwtDecode } from "jwt-decode";
 
 // Type definitions
 interface UserData {
@@ -51,21 +53,32 @@ export const GET: APIRoute = async ({ cookies }) => {
       throw new Error("Missing Firebase configuration");
     }
 
-    let userId = cookies.get("user_id")?.value;
+    let userId = cookies.get("session")?.value;
 
     // Jika tidak ada user_id di cookie, ambil user pertama dari Firestore
     let user: UserData = {};
     if (!userId) {
-      const usersSnap = await db.collection("users").limit(1).get();
-      if (!usersSnap.empty) {
-        user = usersSnap.docs[0].data() as UserData;
-        userId = usersSnap.docs[0].id;
-      }
+      return new Response(
+        JSON.stringify({
+          error: "User ID not found in cookies",
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+        }
+      );
     } else {
-      const userDoc = await db.collection("users").doc(userId).get();
+      const decodedToken: {
+        name: string;
+        email: string;
+        user_id: string;
+      } = jwtDecode(cookies.get("session")?.value || "");
+      const userDoc = await db.collection("users").doc(decodedToken.user_id).get();
       user = userDoc.exists ? (userDoc.data() as UserData) || {} : {};
     }
-
     // Pastikan sosmed selalu array
     let sosmed: string[] = [];
     if (Array.isArray(user.sosmed)) {
