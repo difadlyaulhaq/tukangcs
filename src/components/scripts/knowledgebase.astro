@@ -1,0 +1,586 @@
+---
+// src/components/KnowledgeBase.astro
+---
+
+<!-- Knowledge Base Section -->
+<div id="knowledge-base" class="content-section">
+  <div class="card">
+    <h2 class="card-title">
+      <i class="fas fa-folder-open"></i> Knowledge Base
+    </h2>
+    <p>
+      Upload dokumen perusahaan dan data teks untuk melatih chatbot AI
+      Anda.
+    </p>
+
+    <div class="form-group">
+      <label class="form-label">Upload Dokumen Perusahaan</label>
+      <div
+        class="upload-area"
+        onclick="document.getElementById('fileInput').click()"
+      >
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <p>Klik untuk upload dokumen (PDF, DOC, TXT)</p>
+        <small>Maksimal 10MB per file</small>
+      </div>
+      <input
+        type="file"
+        id="fileInput"
+        style="display: none;"
+        multiple
+        accept=".pdf,.doc,.docx,.txt"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tambah Data Teks</label>
+      <textarea
+        class="form-textarea"
+        placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya..."
+      ></textarea>
+      <button class="btn" style="margin-top: 0.5rem;">
+        <i class="fas fa-save"></i> Simpan Data Teks
+      </button>
+    </div>
+
+    <h3 style="margin: 2rem 0 1rem 0;">
+      <i class="fas fa-file-alt"></i> Dokumen Tersimpan
+    </h3>
+
+    <!-- Container untuk dokumen yang akan diisi oleh JavaScript -->
+    <div id="documents-container">
+      <!-- Dokumen akan dimuat secara dinamis -->
+    </div>
+  </div>
+</div>
+
+<!-- Notification untuk feedback user -->
+<div id="notification" style="display: none;">
+  <!-- Akan diisi oleh JavaScript -->
+</div>
+
+<script>
+// Knowledge Base Frontend Script with TypeScript fixes
+interface Document {
+  id: string;
+  title: string;
+  type: 'file' | 'text';
+  fileUrl?: string;
+  fileName?: string;
+  originalName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  content?: string;
+  characterCount?: number;
+  wordCount?: number;
+  uploadedAt: any;
+  createdAt?: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  error?: string;
+  documents?: T[];
+  message?: string;
+  docId?: string;
+  characterCount?: number;
+  wordCount?: number;
+  fileName?: string;
+  fileUrl?: string;
+  details?: string;
+}
+
+type NotificationType = 'success' | 'error' | 'warning' | 'info';
+
+declare global {
+  interface Window {
+    deleteDocument: (docId: string, title: string) => Promise<void>;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements with proper type assertions
+  const fileInput = document.getElementById('fileInput') as HTMLInputElement | null;
+  const textArea = document.querySelector('.form-textarea') as HTMLTextAreaElement | null;
+  const saveTextBtn = textArea?.nextElementSibling as HTMLButtonElement | null;
+  const documentsContainer = document.getElementById('documents-container') as HTMLElement | null;
+  
+  // Initialize
+  loadDocuments();
+
+  // File Upload Handler
+  if (fileInput) {
+    fileInput.addEventListener('change', handleFileUpload);
+  }
+
+  // Save Text Handler
+  if (saveTextBtn) {
+    saveTextBtn.addEventListener('click', handleSaveText);
+  }
+
+  // Handle File Upload
+  async function handleFileUpload(event: Event): Promise<void> {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+    if (!files || files.length === 0) return;
+
+    for (let file of files) {
+      await uploadFile(file);
+    }
+    
+    // Clear input
+    if (fileInput) {
+      fileInput.value = '';
+    }
+    
+    // Reload documents
+    loadDocuments();
+  }
+
+  // Upload File Function
+  async function uploadFile(file: File): Promise<void> {
+    try {
+      showNotification('Mengupload file...', 'info');
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', file.name);
+
+      const response = await fetch('/api/knowledge-base/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result: ApiResponse<never> = await response.json();
+
+      if (result.success) {
+        showNotification(`File ${file.name} berhasil diupload`, 'success');
+      } else {
+        throw new Error(result.error || 'Gagal upload file');
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showNotification(`Gagal upload ${file.name}: ${errorMessage}`, 'error');
+    }
+  }
+
+  // Handle Save Text
+  async function handleSaveText(): Promise<void> {
+    const content = textArea?.value?.trim();
+    
+    if (!content) {
+      showNotification('Masukkan data teks terlebih dahulu', 'warning');
+      return;
+    }
+
+    if (content.length < 10) {
+      showNotification('Data teks minimal 10 karakter', 'warning');
+      return;
+    }
+
+    try {
+      showNotification('Menyimpan data teks...', 'info');
+      
+      // Generate title from first line or first 50 characters
+      const title = content.split('\n')[0].substring(0, 50) + (content.length > 50 ? '...' : '');
+
+      const response = await fetch('/api/knowledge-base/text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          title: title,
+          content: content
+        })
+      });
+
+      const result: ApiResponse<never> = await response.json();
+
+      if (result.success) {
+        if (textArea) {
+          textArea.value = '';
+        }
+        showNotification('Data teks berhasil disimpan', 'success');
+        loadDocuments();
+      } else {
+        throw new Error(result.error || 'Gagal menyimpan data teks');
+      }
+    } catch (error) {
+      console.error('Save text error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showNotification(`Gagal menyimpan: ${errorMessage}`, 'error');
+    }
+  }
+
+  // Load Documents
+  async function loadDocuments(): Promise<void> {
+    try {
+      const response = await fetch('/api/knowledge-base/list');
+      const result: ApiResponse<Document> = await response.json();
+
+      if (result.success && result.documents) {
+        displayDocuments(result.documents);
+      } else {
+        throw new Error(result.error || 'Gagal memuat dokumen');
+      }
+    } catch (error) {
+      console.error('Load documents error:', error);
+      showNotification('Gagal memuat dokumen', 'error');
+    }
+  }
+
+  // Display Documents
+  function displayDocuments(documents: Document[]): void {
+    if (!documentsContainer) return;
+
+    // Clear existing documents
+    documentsContainer.innerHTML = '';
+
+    if (documents.length === 0) {
+      const emptyState = document.createElement('div');
+      emptyState.className = 'empty-state';
+      emptyState.innerHTML = `
+        <div style="text-align: center; padding: 2rem; color: #666;">
+          <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <p>Belum ada dokumen tersimpan</p>
+          <small>Upload file atau tambah data teks untuk memulai</small>
+        </div>
+      `;
+      documentsContainer.appendChild(emptyState);
+      return;
+    }
+
+    documents.forEach(doc => {
+      const docItem = createDocumentItem(doc);
+      documentsContainer.appendChild(docItem);
+    });
+  }
+
+  // Create Document Item
+  function createDocumentItem(doc: Document): HTMLElement {
+    const docItem = document.createElement('div');
+    docItem.className = 'document-item';
+    docItem.setAttribute('data-doc-id', doc.id);
+
+    const icon = getDocumentIcon(doc);
+    const info = getDocumentInfo(doc);
+
+    docItem.innerHTML = `
+      <div class="document-info">
+        <span class="document-icon">${icon}</span>
+        <div>
+          <h4>${doc.title}</h4>
+          <small>${info}</small>
+        </div>
+      </div>
+      <button class="btn btn-danger" onclick="deleteDocument('${doc.id}', '${doc.title}')">
+        <i class="fas fa-trash"></i> Hapus
+      </button>
+    `;
+
+    return docItem;
+  }
+
+  // Get Document Icon
+  function getDocumentIcon(doc: Document): string {
+    if (doc.type === 'text') {
+      return '<i class="fas fa-file-alt"></i>';
+    }
+    
+    switch (doc.mimeType) {
+      case 'application/pdf':
+        return '<i class="fas fa-file-pdf"></i>';
+      case 'application/msword':
+      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        return '<i class="fas fa-file-word"></i>';
+      case 'text/plain':
+        return '<i class="fas fa-file-alt"></i>';
+      default:
+        return '<i class="fas fa-file"></i>';
+    }
+  }
+
+  // Get Document Info
+  function getDocumentInfo(doc: Document): string {
+    if (doc.type === 'text') {
+      return `Data teks • ${doc.characterCount || 0} karakter`;
+    }
+    
+    const fileSize = formatFileSize(doc.fileSize || 0);
+    const uploadDate = formatDate(doc.createdAt || doc.uploadedAt);
+    return `Diupload ${uploadDate} • ${fileSize}`;
+  }
+
+  // Format File Size
+  function formatFileSize(bytes: number): string {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  }
+
+  // Format Date
+  function formatDate(dateInput: any): string {
+    let date: Date;
+    if (dateInput && dateInput.seconds) {
+      // Firestore timestamp
+      date = new Date(dateInput.seconds * 1000);
+    } else if (dateInput) {
+      date = new Date(dateInput);
+    } else {
+      return 'Tidak diketahui';
+    }
+    
+    return date.toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  }
+
+  // Delete Document (global function)
+  window.deleteDocument = async function(docId: string, title: string): Promise<void> {
+    if (!confirm(`Apakah Anda yakin ingin menghapus "${title}"?`)) {
+      return;
+    }
+
+    try {
+      showNotification('Menghapus dokumen...', 'info');
+      
+      const response = await fetch('/api/knowledge-base/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ docId })
+      });
+
+      const result: ApiResponse<never> = await response.json();
+
+      if (result.success) {
+        showNotification('Dokumen berhasil dihapus', 'success');
+        
+        // Remove from DOM
+        const docItem = document.querySelector(`[data-doc-id="${docId}"]`);
+        if (docItem) {
+          docItem.remove();
+        }
+        
+        // Reload if no items left
+        const remainingItems = document.querySelectorAll('.document-item');
+        if (remainingItems.length === 0) {
+          loadDocuments();
+        }
+      } else {
+        throw new Error(result.error || 'Gagal menghapus dokumen');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showNotification(`Gagal menghapus: ${errorMessage}`, 'error');
+    }
+  };
+
+  // Show Notification Function
+  function showNotification(message: string, type: NotificationType = 'info'): void {
+    const notification = document.getElementById('notification');
+    if (notification) {
+      const iconMap: Record<NotificationType, string> = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+      };
+
+      notification.innerHTML = `
+        <i class="fas ${iconMap[type]}"></i>
+        <span>${message}</span>
+      `;
+      notification.style.display = 'flex';
+      notification.classList.add('show');
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 300);
+      }, 5000);
+    }
+  }
+});
+</script>
+
+<style>
+/* Knowledge Base Styles */
+.content-section {
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.upload-area:hover {
+  border-color: #007bff;
+}
+
+.upload-icon {
+  font-size: 2rem;
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+
+.btn-danger {
+  background: #dc3545;
+}
+
+.btn-danger:hover {
+  background: #c82333;
+}
+
+.document-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  background: #f8f9fa;
+}
+
+.document-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.document-icon {
+  font-size: 1.5rem;
+  color: #007bff;
+}
+
+.document-info h4 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+}
+
+.document-info small {
+  color: #666;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+/* Notification Styles */
+#notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1000;
+  max-width: 400px;
+  opacity: 0;
+  transform: translateX(100%);
+  transition: all 0.3s ease;
+}
+
+#notification.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+#notification .fas {
+  font-size: 1.2rem;
+}
+
+#notification .fa-check-circle {
+  color: #28a745;
+}
+
+#notification .fa-exclamation-circle {
+  color: #dc3545;
+}
+
+#notification .fa-exclamation-triangle {
+  color: #ffc107;
+}
+
+#notification .fa-info-circle {
+  color: #17a2b8;
+}
+</style>
