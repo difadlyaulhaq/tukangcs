@@ -4,7 +4,7 @@ const prerender = false;
 const POST = async ({ request, cookies }) => {
   console.log("Login API called at:", (/* @__PURE__ */ new Date()).toISOString());
   try {
-    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_BxVEpPtv.mjs');
+    const { adminAuth, adminDb } = await import('../../../chunks/firebase-admin_BfKP5ctk.mjs');
     if (!adminAuth || !adminDb) {
       console.error("Firebase Admin not initialized");
       return new Response(
@@ -48,6 +48,7 @@ const POST = async ({ request, cookies }) => {
       }
     );
     const authData = await authResponse.json();
+    console.log("Auth response:", authData);
     if (!authResponse.ok) {
       let errorMessage = "Login gagal";
       if (authData.error) {
@@ -94,6 +95,10 @@ const POST = async ({ request, cookies }) => {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
+      maxAge: fiveDays / 1e3
+    });
+    cookies.set("user_id", decodedToken.uid, {
+      path: "/",
       maxAge: fiveDays / 1e3
     });
     return new Response(

@@ -1,22 +1,11 @@
 // src/pages/api/knowledge-base/text.ts
 import type { APIRoute } from 'astro';
-import { adminAuth, adminDb } from '../../../lib/firebase-admin';
+import { adminDb } from '../../../lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
-    const { title, content, authToken } = await request.json();
-
-    if (!authToken) {
-      return new Response(JSON.stringify({ error: 'Token tidak ditemukan' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Verify token
-    const decodedToken = await adminAuth.verifyIdToken(authToken);
-    const userId = decodedToken.uid;
+    const { title, content } = await request.json();
 
     if (!title || !content) {
       return new Response(JSON.stringify({ error: 'Title dan content harus diisi' }), {
@@ -25,14 +14,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    if (content.trim().length < 10) {
+      return new Response(JSON.stringify({ error: 'Content minimal 10 karakter' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     // Simpan data teks ke Firestore
     const docData = {
-      title: title,
+      title: title.trim(),
       type: 'text',
-      content: content,
-      characterCount: content.length,
+      content: content.trim(),
+      characterCount: content.trim().length,
+      wordCount: content.trim().split(/\s+/).length,
       uploadedAt: FieldValue.serverTimestamp(),
-      userId: userId
+      createdAt: new Date().toISOString()
     };
 
     const docRef = await adminDb.collection('knowledge_base').add(docData);
@@ -40,6 +37,8 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(JSON.stringify({ 
       success: true, 
       docId: docRef.id,
+      characterCount: docData.characterCount,
+      wordCount: docData.wordCount,
       message: 'Data teks berhasil disimpan'
     }), {
       status: 200,

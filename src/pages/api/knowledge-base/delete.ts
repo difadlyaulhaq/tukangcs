@@ -1,24 +1,13 @@
 // src/pages/api/knowledge-base/delete.ts
 import type { APIRoute } from 'astro';
-import { adminAuth, adminDb } from '../../../lib/firebase-admin';
+import { adminDb } from '../../../lib/firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
 
 const storage = getStorage();
 
 export const DELETE: APIRoute = async ({ request }) => {
   try {
-    const { docId, authToken } = await request.json();
-
-    if (!authToken) {
-      return new Response(JSON.stringify({ error: 'Token tidak ditemukan' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Verify token
-    const decodedToken = await adminAuth.verifyIdToken(authToken);
-    const userId = decodedToken.uid;
+    const { docId } = await request.json();
 
     if (!docId) {
       return new Response(JSON.stringify({ error: 'Document ID harus disediakan' }), {
@@ -40,24 +29,17 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     const docData = doc.data();
 
-    // Check if user owns the document
-    if (docData?.userId !== userId) {
-      return new Response(JSON.stringify({ error: 'Tidak memiliki akses ke dokumen ini' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
     // If it's a file, delete from Storage
     if (docData?.type === 'file' && docData?.fileName) {
       const bucket = storage.bucket();
-      const fileRef = bucket.file(`knowledge-base/${userId}/${docData.fileName}`);
+      const fileRef = bucket.file(`knowledge-base/${docData.fileName}`);
       
       try {
         await fileRef.delete();
+        console.log(`File ${docData.fileName} deleted from storage`);
       } catch (error) {
         console.warn('File deletion warning:', error);
-        // Continue even if file deletion fails
+        // Continue even if file deletion fails (file might not exist)
       }
     }
 
@@ -66,7 +48,9 @@ export const DELETE: APIRoute = async ({ request }) => {
 
     return new Response(JSON.stringify({ 
       success: true,
-      message: 'Dokumen berhasil dihapus'
+      message: 'Dokumen berhasil dihapus',
+      deletedDocId: docId,
+      deletedTitle: docData?.title || 'Unknown'
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

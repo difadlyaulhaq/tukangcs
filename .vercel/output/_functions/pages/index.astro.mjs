@@ -1,6 +1,6 @@
-import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate, f as createAstro } from '../chunks/astro/server_BmReEcGK.mjs';
+import { c as createComponent, r as renderHead, a as renderComponent, b as renderScript, d as renderTemplate, f as createAstro } from '../chunks/astro/server_CR1q8Skd.mjs';
 import 'kleur/colors';
-import { a as $$Footer, $ as $$Navbar } from '../chunks/footer_5O4tyabJ.mjs';
+import { a as $$Footer, $ as $$Navbar } from '../chunks/footer_LNyrN76G.mjs';
 /* empty css                                 */
 export { renderers } from '../renderers.mjs';
 

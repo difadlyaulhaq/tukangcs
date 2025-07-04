@@ -1,1228 +1,583 @@
 ---
-import ScriptWaDashboard from "src/components/scripts/script-wa-dashboard.astro"
+import ScriptWaDashboard from "src/components/scripts/script-wa-dashboard.astro";
+import "../app.css";
+import Knowledgebase from "src/components/scripts/knowledgebase.astro";
 ---
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - TukangCS</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-      .social-platform {
-            border: 1px solid #e1e5e9;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .social-platform.connected {
-            border-left: 4px solid #25d366;
-            background-color: rgba(37, 211, 102, 0.1);
-        }
-
-        .social-platform.disconnected {
-            border-left: 4px solid #dc3545;
-            background-color: rgba(220, 53, 69, 0.1);
-        }
-
-        .social-platform.connecting {
-            border-left: 4px solid #f59e0b;
-            background-color: rgba(245, 158, 11, 0.1);
-        }
-
-        .platform-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .platform-icon {
-            font-size: 2rem;
-            color: #25d366;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-connected {
-            background-color: #10b981;
-            color: white;
-        }
-
-        .status-disconnected {
-            background-color: #ef4444;
-            color: white;
-        }
-
-        .status-connecting {
-            background-color: #f59e0b;
-            color: white;
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            text-decoration: none;
-            display: inline-block;
-            transition: all 0.3s ease;
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-primary {
-            background-color: #25d366;
-        }
-
-        .btn-primary:hover {
-            background-color: #128c7e;
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .modal-input {
-            width: 100%;
-            padding: 0.75rem;
-            margin: 1rem 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .pairing-code {
-            font-size: 2.5rem;
-            font-weight: bold;
-            letter-spacing: 0.5rem;
-            margin: 1rem 0;
-            color: #25d366;
-            font-family: 'Courier New', monospace;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .spinner {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            max-width: 300px;
-        }
-
-        .notification.success { background-color: #10b981; }
-        .notification.error { background-color: #ef4444; }
-        .notification.warning { background-color: #f59e0b; }
-        .notification.info { background-color: #3b82f6; }
-        .notification.show { opacity: 1; }
-
-        .connection-methods {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-            overflow-x: hidden;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            height: 70px;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo i {
-            font-size: 1.8rem;
-        }
-        
-        .user-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
-        
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-        
-        .layout {
-            display: flex;
-            margin-top: 70px;
-            min-height: calc(100vh - 70px);
-        }
-        
-        .sidebar {
-            width: 280px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid rgba(0, 0, 0, 0.1);
-            padding: 1.5rem 0;
-            height: calc(100vh - 70px);
-            overflow-y: auto;
-            position: fixed;
-            transition: transform 0.3s ease;
-            z-index: 900;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-        }
-        
-        .menu-item {
-            margin: 0.25rem 0;
-        }
-        
-        .menu-link {
-            display: flex;
-            align-items: center;
-            padding: 1rem 2rem;
-            text-decoration: none;
-            color: #555;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-            font-size: 1.05rem;
-        }
-        
-        .menu-link:hover {
-            background: rgba(102, 126, 234, 0.1);
-            color: #667eea;
-        }
-        
-        .menu-link.active {
-            background: rgba(102, 126, 234, 0.15);
-            color: #667eea;
-            border-left-color: #667eea;
-            font-weight: 600;
-        }
-        
-        .menu-icon {
-            width: 24px;
-            text-align: center;
-            margin-right: 1rem;
-            font-size: 1.2rem;
-        }
-        
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 2rem;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .content-section {
-            display: none;
-            animation: fadeIn 0.4s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .content-section.active {
-            display: block;
-        }
-        
-        .welcome-card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .welcome-title {
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .welcome-subtitle {
-            color: #666;
-            margin-bottom: 1rem;
-            font-size: 1.1rem;
-        }
-        
-        .user-info {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 1.5rem;
-            border-left: 4px solid #667eea;
-        }
-        
-        .user-info h3 {
-            margin-bottom: 1rem;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .user-info p {
-            margin-bottom: 0.5rem;
-            color: #666;
-            display: flex;
-        }
-        
-        .user-info p strong {
-            width: 130px;
-            display: inline-block;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .card-title {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            color: #333;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 8px;
-            padding: 2.5rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 1.5rem 0;
-            position: relative;
-        }
-        
-        .upload-area:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-        }
-        
-        .upload-icon {
-            font-size: 3rem;
-            color: #ddd;
-            margin-bottom: 1rem;
-        }
-        
-        .upload-area:hover .upload-icon {
-            color: #667eea;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #333;
-            font-size: 1.05rem;
-        }
-        
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-            font-family: inherit;
-        }
-        
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-        }
-        
-        .form-textarea {
-            min-height: 150px;
-            resize: vertical;
-        }
-        
-        .btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-weight: 500;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn i {
-            font-size: 1.1rem;
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-        }
-        
-        .social-platform {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.2rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .social-platform:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .social-platform.connected {
-            border-color: #28a745;
-            background: rgba(40, 167, 69, 0.05);
-        }
-        
-        .social-platform.disconnected {
-            border-color: #dc3545;
-            background: rgba(220, 53, 69, 0.05);
-        }
-        
-        .platform-info {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-        
-        .platform-icon {
-            font-size: 1.8rem;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-        }
-        
-        .whatsapp .platform-icon {
-            background: #25D366;
-            color: white;
-        }
-        
-        .instagram .platform-icon {
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-            color: white;
-        }
-        
-        .facebook .platform-icon {
-            background: #1877F2;
-            color: white;
-        }
-        
-        .twitter .platform-icon {
-            background: #1DA1F2;
-            color: white;
-        }
-        
-        .status-badge {
-            padding: 0.4rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-        }
-        
-        .status-connected {
-            background: #28a745;
-            color: white;
-        }
-        
-        .status-disconnected {
-            background: #dc3545;
-            color: white;
-        }
-        
-        .document-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.2rem;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
-        }
-        
-        .document-item:hover {
-            background: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-            transform: translateY(-2px);
-        }
-        
-        .document-info {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-        
-        .document-icon {
-            font-size: 1.8rem;
-            color: #667eea;
-        }
-        
-        .wordcloud-container {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-        
-        .sentiment-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-        }
-        
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-positive { color: #28a745; }
-        .stat-neutral { color: #ffc107; }
-        .stat-negative { color: #dc3545; }
-        
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.8rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 5px;
-        }
-        
-        .mobile-menu-toggle:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .overlay {
-            position: fixed;
-            top: 70px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 800;
-            display: none;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 1100;
-            transform: translateX(150%);
-            transition: transform 0.4s ease;
-        }
-        
-        .notification.show {
-            transform: translateX(0);
-        }
-        
-        .notification.success {
-            border-left: 4px solid #28a745;
-        }
-        
-        .notification.error {
-            border-left: 4px solid #dc3545;
-        }
-        
-        @media (max-width: 992px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .overlay.visible {
-                display: block;
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .header {
-                padding: 1rem;
-            }
-            
-            .main-content {
-                padding: 1.5rem 1rem;
-            }
-            
-            .welcome-card,
-            .card {
-                padding: 1.5rem;
-            }
-            
-            .card-title {
-                font-size: 1.3rem;
-            }
-            
-            .sentiment-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
     <div class="header">
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <button class="mobile-menu-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-bars"></i>
-            </button>
-            <div class="logo">
-                <i class="fas fa-headset"></i>
-                <span>TukangCS</span>
-            </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo">
+          <i class="fas fa-headset"></i>
+          <span>TukangCS</span>
         </div>
-        <div class="user-header">
-            <div class="user-avatar">U</div>
-            <button class="logout-btn" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </button>
-        </div>
+      </div>
+      <div class="user-header">
+        <div class="user-avatar">U</div>
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
     </div>
 
     <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 
     <div class="layout">
-        <nav class="sidebar" id="sidebar">
-    <ul class="sidebar-menu">
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link active" onclick="showSection('dashboard', event)">
-                <span class="menu-icon"><i class="fas fa-home"></i></span>
-                Dashboard
+      <nav class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link active"
+              onclick="showSection('dashboard', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-home"></i></span>
+              Dashboard
             </a>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link" onclick="showSection('social-media', event)">
-                <span class="menu-icon"><i class="fas fa-mobile-alt"></i></span>
-                Kelola Media Sosial
+          </li>
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link"
+              onclick="showSection('social-media', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-mobile-alt"></i></span>
+              Kelola Media Sosial
             </a>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link" onclick="showSection('knowledge-base', event)">
-                <span class="menu-icon"><i class="fas fa-folder-open"></i></span>
-                Knowledge Base
+          </li>
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link"
+              onclick="showSection('knowledge-base', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-folder-open"></i></span>
+              Knowledge Base
             </a>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link" onclick="showSection('sentiment-analysis', event)">
-                <span class="menu-icon"><i class="fas fa-chart-pie"></i></span>
-                Analisis Sentimen
+          </li>
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link"
+              onclick="showSection('sentiment-analysis', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-chart-pie"></i></span>
+              Analisis Sentimen
             </a>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link" onclick="showSection('chatbot', event)">
-                <span class="menu-icon"><i class="fas fa-robot"></i></span>
-                Chatbot AI
+          </li>
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link"
+              onclick="showSection('chatbot', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-robot"></i></span>
+              Chatbot AI
             </a>
-        </li>
-        <li class="menu-item">
-            <a href="javascript:void(0)" class="menu-link" onclick="showSection('analytics', event)">
-                <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
-                Analytics
+          </li>
+          <li class="menu-item">
+            <a
+              href="javascript:void(0)"
+              class="menu-link"
+              onclick="showSection('analytics', event)"
+            >
+              <span class="menu-icon"><i class="fas fa-chart-line"></i></span>
+              Analytics
             </a>
-        </li>
-    </ul>
-</nav>
+          </li>
+        </ul>
+      </nav>
 
-        <main class="main-content">
-            <!-- Dashboard Section -->
-            <div id="dashboard" class="content-section active">
-                <div class="welcome-card">
-                    <h1 class="welcome-title">
-                        <i class="fas fa-hand-wave"></i>
-                        Selamat Datang! 👋
-                    </h1>
-                    <p class="welcome-subtitle">Anda berhasil masuk ke dashboard TukangCS</p>
-                    
-                    <div class="user-info">
-                    <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
-                    <p><strong>Email:</strong> <span id="user-email">-</span></p>
-                    <p><strong>Nama UMKM:</strong> <span id="user-nama">-</span></p>
-                    <p><strong>Sektor:</strong> <span id="user-sektor">-</span></p>
-                    <p><strong>Platform Sosmed:</strong> <span id="user-sosmed">-</span></p>
-                    <p><strong>Bergabung:</strong> <span id="user-bergabung">-</span></p>
-                </div>
-            </div>
-                <div class="card">
-                <h2 class="card-title"><i class="fas fa-chart-bar"></i> Ringkasan Aktivitas</h2>
-                <div class="sentiment-stats">
-                    <div class="stat-card">
-                        <div class="stat-number stat-positive" id="stat-pesan-masuk">0</div>
-                        <div>Pesan Masuk Hari Ini</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number stat-neutral" id="stat-respon-otomatis">0</div>
-                        <div>Respon Otomatis</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number stat-negative" id="stat-perlu-perhatian">0</div>
-                        <div>Perlu Perhatian</div>
-                    </div>
-                </div>
-                <div style="margin-top: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
-                    <div id="aktivitas-terbaru" style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;">
-                        <!-- Diisi via JS -->
-                    </div>
-                </div>
-            </div>
-            </div>
+      <main class="main-content">
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="content-section active">
+          <div class="welcome-card">
+            <h1 class="welcome-title">
+              <i class="fas fa-hand-wave"></i>
+              Selamat Datang! 👋
+            </h1>
+            <p class="welcome-subtitle">
+              Anda berhasil masuk ke dashboard TukangCS
+            </p>
 
-            <!-- Social Media Management Section -->
-            <div id="social-media" class="content-section">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-mobile-alt"></i> Kelola Media Sosial</h2>
-                    <p>Hubungkan dan kelola akun media sosial Anda dalam satu dashboard.</p>
+            <div class="user-info">
+              <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
+              <p><strong>Email:</strong> <span id="user-email">-</span></p>
+              <p><strong>Nama UMKM:</strong> <span id="user-nama">-</span></p>
+              <p><strong>Sektor:</strong> <span id="user-sektor">-</span></p>
+              <p>
+                <strong>Platform Sosmed:</strong>
+                <span id="user-sosmed">-</span>
+              </p>
+              <p>
+                <strong>Bergabung:</strong>
+                <span id="user-bergabung">-</span>
+              </p>
+            </div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">
+              <i class="fas fa-chart-bar"></i> Ringkasan Aktivitas
+            </h2>
+            <div class="sentiment-stats">
+              <div class="stat-card">
+                <div class="stat-number stat-positive" id="stat-pesan-masuk">
+                  0
+                </div>
+                <div>Pesan Masuk Hari Ini</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number stat-neutral" id="stat-respon-otomatis">
+                  0
+                </div>
+                <div>Respon Otomatis</div>
+              </div>
+              <div class="stat-card">
+                <div
+                  class="stat-number stat-negative"
+                  id="stat-perlu-perhatian"
+                >
+                  0
+                </div>
+                <div>Perlu Perhatian</div>
+              </div>
+            </div>
+            <div style="margin-top: 2rem;">
+              <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
+              <div
+                id="aktivitas-terbaru"
+                style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;"
+              >
+                <!-- Diisi via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
 
-                    <div class="social-platform connected whatsapp">
-                          <!-- WhatsApp Platform Card -->
-        <div class="social-platform disconnected" id="wa-platform">
-            <div class="platform-info">
-                <span class="platform-icon"><i class="fab fa-whatsapp"></i></span>
-                <div>
+        <!-- Social Media Management Section -->
+        <div id="social-media" class="content-section">
+          <div class="card">
+            <h2 class="card-title">
+              <i class="fas fa-mobile-alt"></i> Kelola Media Sosial
+            </h2>
+            <p>
+              Hubungkan dan kelola akun media sosial Anda dalam satu dashboard.
+            </p>
+
+            <div class="social-platform connected whatsapp">
+              <!-- WhatsApp Platform Card -->
+              <div class="social-platform disconnected" id="wa-platform">
+                <div class="platform-info">
+                  <span class="platform-icon"
+                    ><i class="fab fa-whatsapp"></i></span
+                  >
+                  <div>
                     <h4>WhatsApp Business</h4>
                     <p id="wa-phone">Belum terhubung</p>
+                  </div>
                 </div>
-            </div>
-            <div>
-                <span class="status-badge status-disconnected" id="wa-status">Terputus</span>
-                <div class="connection-methods" id="wa-connection-methods">
+                <div>
+                  <span class="status-badge status-disconnected" id="wa-status"
+                    >Terputus</span
+                  >
+                  <div class="connection-methods" id="wa-connection-methods">
                     <button class="btn btn-primary" id="wa-pairing-btn">
-                        <i class="fas fa-mobile-alt"></i> Pairing Code
+                      <i class="fas fa-mobile-alt"></i> Pairing Code
                     </button>
                     <button class="btn" id="wa-qr-btn">
-                        <i class="fas fa-qrcode"></i> QR Code
+                      <i class="fas fa-qrcode"></i> QR Code
                     </button>
+                  </div>
                 </div>
-            </div>
-        </div>
+              </div>
 
-        <!-- Modal untuk input nomor telepon -->
-        <div id="wa-phone-modal" class="modal">
-            <div class="modal-content">
-                <h3>Masukkan Nomor WhatsApp</h3>
-                <p>Masukkan nomor telepon yang terdaftar di WhatsApp Business</p>
-                <input type="tel" id="wa-phone-input" class="modal-input" placeholder="Contoh: 081234567890">
-                <div class="btn-group">
+              <!-- Modal untuk input nomor telepon -->
+              <div id="wa-phone-modal" class="modal">
+                <div class="modal-content">
+                  <h3>Masukkan Nomor WhatsApp</h3>
+                  <p>
+                    Masukkan nomor telepon yang terdaftar di WhatsApp Business
+                  </p>
+                  <input
+                    type="tel"
+                    id="wa-phone-input"
+                    class="modal-input"
+                    placeholder="Contoh: 081234567890"
+                  />
+                  <div class="btn-group">
                     <button class="btn" id="wa-phone-cancel">Batal</button>
-                    <button class="btn btn-primary" id="wa-phone-generate">Generate Kode</button>
+                    <button class="btn btn-primary" id="wa-phone-generate"
+                      >Generate Kode</button
+                    >
+                  </div>
                 </div>
+              </div>
+
+              <!-- Modal untuk menampilkan pairing code -->
+              <div id="wa-pairing-modal" class="modal">
+                <div class="modal-content">
+                  <h3>Kode Pairing WhatsApp</h3>
+                  <p>
+                    Masukkan kode berikut di WhatsApp yang terdaftar dengan
+                    nomor:
+                  </p>
+                  <p
+                    id="wa-pairing-phone"
+                    style="font-weight: bold; color: #25d366;"
+                  >
+                  </p>
+                  <div id="wa-pairing-code" class="pairing-code"></div>
+                  <p>
+                    Buka WhatsApp → Perangkat Tertaut → Tautkan Perangkat →
+                    Masukkan kode di atas
+                  </p>
+                  <button class="btn" id="wa-pairing-close">Tutup</button>
+                </div>
+              </div>
+
+              <!-- Modal QR Code -->
+              <div id="wa-qr-modal" class="modal">
+                <div class="modal-content">
+                  <h3>Scan QR Code</h3>
+                  <div id="wa-qr-img"></div>
+                  <p>
+                    Buka WhatsApp → Perangkat Tertaut → Tautkan Perangkat → Scan
+                    QR Code di atas
+                  </p>
+                  <button class="btn" id="wa-qr-close">Tutup</button>
+                </div>
+              </div>
             </div>
+
+            <div class="social-platform connected instagram">
+              <div class="platform-info">
+                <span class="platform-icon"
+                  ><i class="fab fa-instagram"></i></span
+                >
+                <div>
+                  <h4>Instagram</h4>
+                  <p>@tokoserbaguanajaya</p>
+                </div>
+              </div>
+              <div>
+                <span class="status-badge status-connected">Terhubung</span>
+                <button class="btn btn-secondary" style="margin-left: 0.5rem;">
+                  <i class="fas fa-cog"></i> Kelola
+                </button>
+              </div>
+            </div>
+
+            <div class="social-platform disconnected facebook">
+              <div class="platform-info">
+                <span class="platform-icon"
+                  ><i class="fab fa-facebook"></i></span
+                >
+                <div>
+                  <h4>Facebook</h4>
+                  <p>Belum terhubung</p>
+                </div>
+              </div>
+              <div>
+                <span class="status-badge status-disconnected">Terputus</span>
+                <button
+                  class="btn"
+                  style="margin-left: 0.5rem;"
+                  onclick="connectPlatform('Facebook')"
+                >
+                  <i class="fas fa-link"></i> Hubungkan
+                </button>
+              </div>
+            </div>
+
+            <div class="social-platform disconnected twitter">
+              <div class="platform-info">
+                <span class="platform-icon"><i class="fab fa-twitter"></i></span
+                >
+                <div>
+                  <h4>Twitter/X</h4>
+                  <p>Belum terhubung</p>
+                </div>
+              </div>
+              <div>
+                <span class="status-badge status-disconnected">Terputus</span>
+                <button
+                  class="btn"
+                  style="margin-left: 0.5rem;"
+                  onclick="connectPlatform('Twitter')"
+                >
+                  <i class="fas fa-link"></i> Hubungkan
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Modal untuk menampilkan pairing code -->
-        <div id="wa-pairing-modal" class="modal">
-            <div class="modal-content">
-                <h3>Kode Pairing WhatsApp</h3>
-                <p>Masukkan kode berikut di WhatsApp yang terdaftar dengan nomor:</p>
-                <p id="wa-pairing-phone" style="font-weight: bold; color: #25d366;"></p>
-                <div id="wa-pairing-code" class="pairing-code"></div>
-                <p>Buka WhatsApp → Perangkat Tertaut → Tautkan Perangkat → Masukkan kode di atas</p>
-                <button class="btn" id="wa-pairing-close">Tutup</button>
+        <!-- Knowledge Base Section -->
+        <Knowledgebase />
+
+        <!-- Sentiment Analysis Section -->
+        <div id="sentiment-analysis" class="content-section">
+          <div class="card">
+            <h2 class="card-title">
+              <i class="fas fa-chart-pie"></i> Analisis Sentimen
+            </h2>
+            <p>
+              Analisis sentimen dari pesan pelanggan dan visualisasi dengan word
+              cloud.
+            </p>
+
+            <div class="sentiment-stats">
+              <div class="stat-card">
+                <div class="stat-number stat-positive">67%</div>
+                <div>Sentimen Positif</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number stat-neutral">23%</div>
+                <div>Sentimen Netral</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-number stat-negative">10%</div>
+                <div>Sentimen Negatif</div>
+              </div>
             </div>
+
+            <h3 style="margin: 2rem 0 1rem 0;">
+              <i class="fas fa-cloud"></i> Word Cloud
+            </h3>
+            <div class="wordcloud-container" id="wordcloudContainer">
+              <div style="text-align: center; color: #667eea;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">
+                  <i class="fas fa-cloud"></i>
+                </div>
+                <h3>Word Cloud akan muncul di sini</h3>
+                <p>Berdasarkan analisis pesan pelanggan terbaru</p>
+                <button
+                  class="btn"
+                  style="margin-top: 1rem;"
+                  onclick="generateWordCloud()"
+                >
+                  <i class="fas fa-sync-alt"></i> Generate Word Cloud
+                </button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+              <label class="form-label">Filter Periode</label>
+              <div
+                style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;"
+              >
+                <select class="form-select" style="width: auto; flex: 1;">
+                  <option>7 hari terakhir</option>
+                  <option>30 hari terakhir</option>
+                  <option>3 bulan terakhir</option>
+                  <option>Custom</option>
+                </select>
+                <button class="btn">
+                  <i class="fas fa-redo"></i> Refresh Analisis
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Modal QR Code -->
-        <div id="wa-qr-modal" class="modal">
-            <div class="modal-content">
-                <h3>Scan QR Code</h3>
-                <div id="wa-qr-img"></div>
-                <p>Buka WhatsApp → Perangkat Tertaut → Tautkan Perangkat → Scan QR Code di atas</p>
-                <button class="btn" id="wa-qr-close">Tutup</button>
+        <!-- Chatbot Section -->
+        <div id="chatbot" class="content-section">
+          <div class="card">
+            <h2 class="card-title"><i class="fas fa-robot"></i> Chatbot AI</h2>
+            <p>
+              Konfigurasi dan kelola chatbot AI untuk customer service otomatis.
+            </p>
+
+            <div
+              style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;"
+            >
+              <h3
+                style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;"
+              >
+                <i class="fas fa-tools" style="color: #ffc107;"></i>
+                <span>🚧 Coming Soon</span>
+              </h3>
+              <p>
+                Fitur chatbot AI sedang dalam pengembangan dan akan segera
+                hadir!
+              </p>
+              <p style="margin-top: 0.8rem;">
+                Dapatkan notifikasi saat fitur ini dirilis:
+              </p>
+
+              <div
+                style="display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap;"
+              >
+                <input
+                  type="email"
+                  placeholder="Email Anda"
+                  class="form-input"
+                  style="flex: 1; min-width: 250px;"
+                />
+                <button class="btn">
+                  <i class="fas fa-bell"></i> Beritahu Saya
+                </button>
+              </div>
             </div>
-        </div>                   
-                    </div>
+          </div>
+        </div>
 
-                    <div class="social-platform connected instagram">
-                        <div class="platform-info">
-                            <span class="platform-icon"><i class="fab fa-instagram"></i></span>
-                            <div>
-                                <h4>Instagram</h4>
-                                <p>@tokoserbaguanajaya</p>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="status-badge status-connected">Terhubung</span>
-                            <button class="btn btn-secondary" style="margin-left: 0.5rem;">
-                                <i class="fas fa-cog"></i> Kelola
-                            </button>
-                        </div>
-                    </div>
+        <!-- Analytics Section -->
+        <div id="analytics" class="content-section">
+          <div class="card">
+            <h2 class="card-title">
+              <i class="fas fa-chart-line"></i> Analytics
+            </h2>
+            <p>
+              Dashboard analitik lengkap untuk performa bisnis dan interaksi
+              pelanggan.
+            </p>
 
-                    <div class="social-platform disconnected facebook">
-                        <div class="platform-info">
-                            <span class="platform-icon"><i class="fab fa-facebook"></i></span>
-                            <div>
-                                <h4>Facebook</h4>
-                                <p>Belum terhubung</p>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="status-badge status-disconnected">Terputus</span>
-                            <button class="btn" style="margin-left: 0.5rem;" onclick="connectPlatform('Facebook')">
-                                <i class="fas fa-link"></i> Hubungkan
-                            </button>
-                        </div>
-                    </div>
+            <div
+              style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;"
+            >
+              <h3
+                style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;"
+              >
+                <i class="fas fa-tools" style="color: #ffc107;"></i>
+                <span>🚧 Coming Soon</span>
+              </h3>
+              <p>
+                Fitur analytics dashboard sedang dalam pengembangan dan akan
+                segera hadir!
+              </p>
+              <p style="margin-top: 0.8rem;">
+                Dapatkan notifikasi saat fitur ini dirilis:
+              </p>
 
-                    <div class="social-platform disconnected twitter">
-                        <div class="platform-info">
-                            <span class="platform-icon"><i class="fab fa-twitter"></i></span>
-                            <div>
-                                <h4>Twitter/X</h4>
-                                <p>Belum terhubung</p>
-                            </div>
-                        </div>
-                        <div>
-                            <span class="status-badge status-disconnected">Terputus</span>
-                            <button class="btn" style="margin-left: 0.5rem;" onclick="connectPlatform('Twitter')">
-                                <i class="fas fa-link"></i> Hubungkan
-                            </button>
-                        </div>
-                    </div>
-                </div>
+              <div
+                style="display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap;"
+              >
+                <input
+                  type="email"
+                  placeholder="Email Anda"
+                  class="form-input"
+                  style="flex: 1; min-width: 250px;"
+                />
+                <button class="btn">
+                  <i class="fas fa-bell"></i> Beritahu Saya
+                </button>
+              </div>
             </div>
-
-            <!-- Knowledge Base Section -->
-            <div id="knowledge-base" class="content-section">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-folder-open"></i> Knowledge Base</h2>
-                    <p>Upload dokumen perusahaan dan data teks untuk melatih chatbot AI Anda.</p>
-
-                    <div class="form-group">
-                        <label class="form-label">Upload Dokumen Perusahaan</label>
-                        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-                            <p>Klik untuk upload dokumen (PDF, DOC, TXT)</p>
-                            <small>Maksimal 10MB per file</small>
-                        </div>
-                        <input type="file" id="fileInput" style="display: none;" multiple accept=".pdf,.doc,.docx,.txt">
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Tambah Data Teks</label>
-                        <textarea class="form-textarea" placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya..."></textarea>
-                        <button class="btn" style="margin-top: 0.5rem;">
-                            <i class="fas fa-save"></i> Simpan Data Teks
-                        </button>
-                    </div>
-
-                    <h3 style="margin: 2rem 0 1rem 0;"><i class="fas fa-file-alt"></i> Dokumen Tersimpan</h3>
-                    
-                    <div class="document-item">
-                        <div class="document-info">
-                            <span class="document-icon"><i class="fas fa-file-pdf"></i></span>
-                            <div>
-                                <h4>Katalog Produk 2025.pdf</h4>
-                                <small>Diupload 20 Juni 2025 • 2.3 MB</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-
-                    <div class="document-item">
-                        <div class="document-info">
-                            <span class="document-icon"><i class="fas fa-file-alt"></i></span>
-                            <div>
-                                <h4>FAQ Pelanggan</h4>
-                                <small>Data teks • 1,245 karakter</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-
-                    <div class="document-item">
-                        <div class="document-info">
-                            <span class="document-icon"><i class="fas fa-file-word"></i></span>
-                            <div>
-                                <h4>Kebijakan Return.docx</h4>
-                                <small>Diupload 19 Juni 2025 • 1.1 MB</small>
-                            </div>
-                        </div>
-                        <button class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Hapus
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sentiment Analysis Section -->
-            <div id="sentiment-analysis" class="content-section">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-chart-pie"></i> Analisis Sentimen</h2>
-                    <p>Analisis sentimen dari pesan pelanggan dan visualisasi dengan word cloud.</p>
-
-                    <div class="sentiment-stats">
-                        <div class="stat-card">
-                            <div class="stat-number stat-positive">67%</div>
-                            <div>Sentimen Positif</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number stat-neutral">23%</div>
-                            <div>Sentimen Netral</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-number stat-negative">10%</div>
-                            <div>Sentimen Negatif</div>
-                        </div>
-                    </div>
-
-                    <h3 style="margin: 2rem 0 1rem 0;"><i class="fas fa-cloud"></i> Word Cloud</h3>
-                    <div class="wordcloud-container" id="wordcloudContainer">
-                        <div style="text-align: center; color: #667eea;">
-                            <div style="font-size: 4rem; margin-bottom: 1rem;"><i class="fas fa-cloud"></i></div>
-                            <h3>Word Cloud akan muncul di sini</h3>
-                            <p>Berdasarkan analisis pesan pelanggan terbaru</p>
-                            <button class="btn" style="margin-top: 1rem;" onclick="generateWordCloud()">
-                                <i class="fas fa-sync-alt"></i> Generate Word Cloud
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group" style="margin-top: 2rem;">
-                        <label class="form-label">Filter Periode</label>
-                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                            <select class="form-select" style="width: auto; flex: 1;">
-                                <option>7 hari terakhir</option>
-                                <option>30 hari terakhir</option>
-                                <option>3 bulan terakhir</option>
-                                <option>Custom</option>
-                            </select>
-                            <button class="btn">
-                                <i class="fas fa-redo"></i> Refresh Analisis
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chatbot Section -->
-            <div id="chatbot" class="content-section">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-robot"></i> Chatbot AI</h2>
-                    <p>Konfigurasi dan kelola chatbot AI untuk customer service otomatis.</p>
-                    
-                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
-                        <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;">
-                            <i class="fas fa-tools" style="color: #ffc107;"></i>
-                            <span>🚧 Coming Soon</span>
-                        </h3>
-                        <p>Fitur chatbot AI sedang dalam pengembangan dan akan segera hadir!</p>
-                        <p style="margin-top: 0.8rem;">Dapatkan notifikasi saat fitur ini dirilis:</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap;">
-                            <input type="email" placeholder="Email Anda" class="form-input" style="flex: 1; min-width: 250px;">
-                            <button class="btn">
-                                <i class="fas fa-bell"></i> Beritahu Saya
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Analytics Section -->
-            <div id="analytics" class="content-section">
-                <div class="card">
-                    <h2 class="card-title"><i class="fas fa-chart-line"></i> Analytics</h2>
-                    <p>Dashboard analitik lengkap untuk performa bisnis dan interaksi pelanggan.</p>
-                    
-                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid #ffc107; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
-                        <h3 style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.8rem;">
-                            <i class="fas fa-tools" style="color: #ffc107;"></i>
-                            <span>🚧 Coming Soon</span>
-                        </h3>
-                        <p>Fitur analytics dashboard sedang dalam pengembangan dan akan segera hadir!</p>
-                        <p style="margin-top: 0.8rem;">Dapatkan notifikasi saat fitur ini dirilis:</p>
-                        
-                        <div style="display: flex; gap: 10px; margin-top: 1rem; flex-wrap: wrap;">
-                            <input type="email" placeholder="Email Anda" class="form-input" style="flex: 1; min-width: 250px;">
-                            <button class="btn">
-                                <i class="fas fa-bell"></i> Beritahu Saya
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+          </div>
+        </div>
+      </main>
     </div>
-    
+
     <div class="notification" id="notification">
-        <i class="fas fa-check-circle"></i>
-        <span>Action completed successfully!</span>
+      <i class="fas fa-check-circle"></i>
+      <span>Action completed successfully!</span>
     </div>
     <script>
       // --- FUNGSI UNTUK NAVIGASI DAN UI ---
-    
+
       // Menampilkan/menyembunyikan sidebar pada tampilan mobile
       function toggleSidebar() {
-        document.getElementById('sidebar')?.classList.toggle('active');
-        document.getElementById('overlay')?.classList.toggle('active');
+        document.getElementById("sidebar")?.classList.toggle("active");
+        document.getElementById("overlay")?.classList.toggle("active");
       }
-    
+
       // Menutup sidebar saat area luar (overlay) diklik
       function closeSidebar() {
-        document.getElementById('sidebar')?.classList.remove('active');
-        document.getElementById('overlay')?.classList.remove('active');
+        document.getElementById("sidebar")?.classList.remove("active");
+        document.getElementById("overlay")?.classList.remove("active");
       }
-    
+
       // Berpindah antar-section di dashboard (Dashboard, Media Sosial, dll.)
       function showSection(sectionId: string, event: MouseEvent) {
-
         // Sembunyikan semua section
-        document.querySelectorAll('.content-section').forEach(section => {
-          section.classList.remove('active');
+        document.querySelectorAll(".content-section").forEach((section) => {
+          section.classList.remove("active");
         });
         // Tampilkan section yang dipilih
-        document.getElementById(sectionId)?.classList.add('active');
-    
+        document.getElementById(sectionId)?.classList.add("active");
+
         // Atur style 'active' pada menu sidebar
-        document.querySelectorAll('.sidebar-menu .menu-link').forEach(link => {
-          link.classList.remove('active');
-        });
+        document
+          .querySelectorAll(".sidebar-menu .menu-link")
+          .forEach((link) => {
+            link.classList.remove("active");
+          });
         // Type assertion and null check for event.currentTarget
         const target = event.currentTarget as HTMLElement | null;
         if (target && target.classList) {
-          target.classList.add('active');
+          target.classList.add("active");
         }
-        
+
         // Otomatis tutup sidebar setelah memilih menu (berguna di mobile)
         closeSidebar();
       }
-    
+
       // --- FUNGSI LOGOUT ---
       function logout() {
         // 1. Hapus data sesi dari localStorage
-        localStorage.removeItem('supabase_session');
-        localStorage.removeItem('supabase_user');
-        
+        localStorage.removeItem("supabase_session");
+        localStorage.removeItem("supabase_user");
         // 2. Arahkan browser ke endpoint signout di server.
         // Server akan menghapus cookie sesi dan mengarahkan ke halaman login.
-        window.location.href = '/api/auth/signout';
+        window.location.href = "/api/auth/signout";
       }
-    
+
       // --- MEMBUAT FUNGSI AGAR BISA DIAKSES DARI HTML (`onclick`) ---
       // Ini adalah bagian penting untuk mengatasi error "is not defined"
       window.toggleSidebar = toggleSidebar;
       window.closeSidebar = closeSidebar;
       window.showSection = showSection;
       window.logout = logout;
-    
+
       // --- LOGIKA SAAT HALAMAN SELESAI DIMUAT ---
       document.addEventListener("DOMContentLoaded", async () => {
         // Fungsi untuk menampilkan status "Memuat..."
         const showLoading = (show = true) => {
           const elementsToLoad = [
-            "user-email", "user-nama", "user-sektor", "user-sosmed", "user-bergabung",
-            "stat-pesan-masuk", "stat-respon-otomatis", "stat-perlu-perhatian"
+            "user-email",
+            "user-nama",
+            "user-sektor",
+            "user-sosmed",
+            "user-bergabung",
+            "stat-pesan-masuk",
+            "stat-respon-otomatis",
+            "stat-perlu-perhatian",
           ];
-          elementsToLoad.forEach(id => {
+          elementsToLoad.forEach((id) => {
             const el = document.getElementById(id);
             if (el) el.textContent = show ? "Memuat..." : "-";
           });
           const aktivitasList = document.getElementById("aktivitas-terbaru");
           if (aktivitasList) {
-            aktivitasList.innerHTML = show 
+            aktivitasList.innerHTML = show
               ? '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat...</div>'
               : '<div style="text-align: center; color: #666;">Tidak ada aktivitas.</div>';
           }
         };
-    
+
         showLoading(true);
-    
+
         try {
           const res = await fetch("/api/dashboard-data");
           if (!res.ok) throw new Error(`Gagal memuat data: ${res.statusText}`);
           const data = await res.json();
-    
+
           // Update UI dengan data yang diterima
           const emailEl = document.getElementById("user-email");
           if (emailEl) emailEl.textContent = data.user?.email || "-";
@@ -1231,175 +586,219 @@ import ScriptWaDashboard from "src/components/scripts/script-wa-dashboard.astro"
           const sektorEl = document.getElementById("user-sektor");
           if (sektorEl) sektorEl.textContent = data.user?.sektor || "-";
           const sosmedEl = document.getElementById("user-sosmed");
-          if (sosmedEl) sosmedEl.textContent = Array.isArray(data.user?.sosmed) ? data.user.sosmed.join(", ") : (data.user?.sosmed || "-");
+          if (sosmedEl)
+            sosmedEl.textContent = Array.isArray(data.user?.sosmed)
+              ? data.user.sosmed.join(", ")
+              : data.user?.sosmed || "-";
           const bergabungEl = document.getElementById("user-bergabung");
-          if (bergabungEl) bergabungEl.textContent = data.user?.bergabung || "-";
+          if (bergabungEl)
+            bergabungEl.textContent = data.user?.bergabung || "-";
           const pesanMasukEl = document.getElementById("stat-pesan-masuk");
-          if (pesanMasukEl) pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
-          const responOtomatisEl = document.getElementById("stat-respon-otomatis");
-          if (responOtomatisEl) responOtomatisEl.textContent = String(data.stats?.responOtomatis ?? 0);
-          const perluPerhatianEl = document.getElementById("stat-perlu-perhatian");
-          if (perluPerhatianEl) perluPerhatianEl.textContent = String(data.stats?.perluPerhatian ?? 0);
-          
+          if (pesanMasukEl)
+            pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
+          const responOtomatisEl = document.getElementById(
+            "stat-respon-otomatis"
+          );
+          if (responOtomatisEl)
+            responOtomatisEl.textContent = String(
+              data.stats?.responOtomatis ?? 0
+            );
+          const perluPerhatianEl = document.getElementById(
+            "stat-perlu-perhatian"
+          );
+          if (perluPerhatianEl)
+            perluPerhatianEl.textContent = String(
+              data.stats?.perluPerhatian ?? 0
+            );
+
           const aktivitasList = document.getElementById("aktivitas-terbaru");
           if (aktivitasList) {
             if (data.stats?.pesanTerbaru?.length > 0) {
-              aktivitasList.innerHTML = data.stats.pesanTerbaru.map((item: any) => `
+              aktivitasList.innerHTML = data.stats.pesanTerbaru
+                .map(
+                  (item: any) => `
                 <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1rem;">
                   <div style="background: #667eea; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
                     <i class="fas fa-comment"></i>
                   </div>
                   <div>
-                    <div>Pesan dari <strong>${item.nama || 'Unknown'}</strong></div>
+                    <div>Pesan dari <strong>${item.nama || "Unknown"}</strong></div>
                     <div style="font-size: 0.9rem; color: #666;">"${(item.isi || "").substring(0, 50)}..."</div>
                   </div>
                 </div>
-              `).join('');
+              `
+                )
+                .join("");
             } else {
               showLoading(false); // Menampilkan "Tidak ada aktivitas"
             }
           }
-    
         } catch (err) {
           console.error("Gagal memuat data dashboard:", err);
           showLoading(false); // Menghilangkan status "Memuat..."
         }
       });
     </script>
-  <script type="module">
-document.addEventListener("DOMContentLoaded", async () => {
-  // Loading state
-  const showLoading = (show = true) => {
-    const elements = [
-      "user-email", "user-nama", "user-sektor", "user-sosmed", "user-bergabung",
-      "stat-pesan-masuk", "stat-respon-otomatis", "stat-perlu-perhatian"
-    ];
-    
-    elements.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.textContent = show ? "Memuat..." : "-";
-      }
-    });
-    
-    const aktivitasList = document.getElementById("aktivitas-terbaru");
-    if (aktivitasList) {
-      aktivitasList.innerHTML = show ? 
-        '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat aktivitas...</div>' : 
-        '<div style="text-align: center; color: #666;">Tidak ada aktivitas terbaru</div>';
-    }
-  };
-  
-  // Show loading initially
-  showLoading(true);
+    <script type="module">
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Loading state
+        const showLoading = (show = true) => {
+          const elements = [
+            "user-email",
+            "user-nama",
+            "user-sektor",
+            "user-sosmed",
+            "user-bergabung",
+            "stat-pesan-masuk",
+            "stat-respon-otomatis",
+            "stat-perlu-perhatian",
+          ];
 
-  // Element references
-  const emailEl = document.getElementById("user-email");
-  const namaEl = document.getElementById("user-nama");
-  const sektorEl = document.getElementById("user-sektor");
-  const sosmedEl = document.getElementById("user-sosmed");
-  const bergabungEl = document.getElementById("user-bergabung");
+          elements.forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.textContent = show ? "Memuat..." : "-";
+            }
+          });
 
-  const pesanMasukEl = document.getElementById("stat-pesan-masuk");
-  const responOtomatisEl = document.getElementById("stat-respon-otomatis");
-  const perluPerhatianEl = document.getElementById("stat-perlu-perhatian");
+          const aktivitasList = document.getElementById("aktivitas-terbaru");
+          if (aktivitasList) {
+            aktivitasList.innerHTML = show
+              ? '<div style="text-align: center; color: #666;"><i class="fas fa-spinner fa-spin"></i> Memuat aktivitas...</div>'
+              : '<div style="text-align: center; color: #666;">Tidak ada aktivitas terbaru</div>';
+          }
+        };
 
-  const aktivitasList = document.getElementById("aktivitas-terbaru");
+        // Show loading initially
+        showLoading(true);
 
-  try {
-    const res = await fetch("/api/dashboard-data", {
-      method: "GET",
-      headers: {
-        "Accept": "application/json",
-        "Cache-Control": "no-cache"
-      }
-    });
-    
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-    
-    const data = await res.json();
-    console.log("DATA DASHBOARD:", data);
+        // Element references
+        const emailEl = document.getElementById("user-email");
+        const namaEl = document.getElementById("user-nama");
+        const sektorEl = document.getElementById("user-sektor");
+        const sosmedEl = document.getElementById("user-sosmed");
+        const bergabungEl = document.getElementById("user-bergabung");
 
-    // Update profil dengan fallback
-    if (emailEl) emailEl.textContent = data.user?.email || "demo@example.com";
-    if (namaEl) namaEl.textContent = data.user?.nama_umkm || "Demo UMKM";
-    if (sektorEl) sektorEl.textContent = data.user?.sektor || "Demo Sektor";
-    
-    if (sosmedEl) {
-      const sosmed = data.user?.sosmed;
-      if (Array.isArray(sosmed)) {
-        sosmedEl.textContent = sosmed.join(", ");
-      } else if (sosmed) {
-        sosmedEl.textContent = sosmed;
-      } else {
-        sosmedEl.textContent = "Instagram, WhatsApp";
-      }
-    }
-    
-    if (bergabungEl) bergabungEl.textContent = data.user?.bergabung || new Date().toLocaleDateString("id-ID");
+        const pesanMasukEl = document.getElementById("stat-pesan-masuk");
+        const responOtomatisEl = document.getElementById(
+          "stat-respon-otomatis"
+        );
+        const perluPerhatianEl = document.getElementById(
+          "stat-perlu-perhatian"
+        );
 
-    // Update statistik
-    if (pesanMasukEl) pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
-    if (responOtomatisEl) responOtomatisEl.textContent = String(data.stats?.responOtomatis ?? 0);
-    if (perluPerhatianEl) perluPerhatianEl.textContent = String(data.stats?.perluPerhatian ?? 0);
+        const aktivitasList = document.getElementById("aktivitas-terbaru");
 
-    // Update aktivitas terbaru
-    if (aktivitasList) {
-      const pesanTerbaru = data.stats?.pesanTerbaru || [];
-      
-      if (pesanTerbaru.length === 0) {
-        aktivitasList.innerHTML = `
+        try {
+          const res = await fetch("/api/dashboard-data", {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              "Cache-Control": "no-cache",
+            },
+          });
+
+          if (res.status === 400) {
+            window.location.href = "/login";
+          }
+
+          if (!res.ok) {
+            throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          }
+
+          const data = await res.json();
+          console.log("DATA DASHBOARD:", data);
+
+          // Update profil dengan fallback
+          if (emailEl)
+            emailEl.textContent = data.user?.email || "demo@example.com";
+          if (namaEl) namaEl.textContent = data.user?.nama_umkm || "Demo UMKM";
+          if (sektorEl)
+            sektorEl.textContent = data.user?.sektor || "Demo Sektor";
+
+          if (sosmedEl) {
+            const sosmed = data.user?.sosmed;
+            if (Array.isArray(sosmed)) {
+              sosmedEl.textContent = sosmed.join(", ");
+            } else if (sosmed) {
+              sosmedEl.textContent = sosmed;
+            } else {
+              sosmedEl.textContent = "Instagram, WhatsApp";
+            }
+          }
+
+          if (bergabungEl)
+            bergabungEl.textContent =
+              data.user?.bergabung || new Date().toLocaleDateString("id-ID");
+
+          // Update statistik
+          if (pesanMasukEl)
+            pesanMasukEl.textContent = String(data.stats?.pesanMasuk ?? 0);
+          if (responOtomatisEl)
+            responOtomatisEl.textContent = String(
+              data.stats?.responOtomatis ?? 0
+            );
+          if (perluPerhatianEl)
+            perluPerhatianEl.textContent = String(
+              data.stats?.perluPerhatian ?? 0
+            );
+
+          // Update aktivitas terbaru
+          if (aktivitasList) {
+            const pesanTerbaru = data.stats?.pesanTerbaru || [];
+
+            if (pesanTerbaru.length === 0) {
+              aktivitasList.innerHTML = `
           <div style="text-align: center; color: #666; padding: 2rem;">
             <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
             <div>Belum ada aktivitas terbaru</div>
           </div>
         `;
-      } else {
-        aktivitasList.innerHTML = "";
-        
-        pesanTerbaru.forEach((item, index) => {
-          let icon = "fa-comment";
-          let bg = "#667eea";
-          let statusText = "Pesan baru";
-          
-          if (item.status === "otomatis") { 
-            icon = "fa-check-circle"; 
-            bg = "#28a745"; 
-            statusText = "Respon otomatis terkirim";
-          } else if (item.status === "perlu_perhatian") { 
-            icon = "fa-exclamation-triangle"; 
-            bg = "#ffc107"; 
-            statusText = "Pesan perlu perhatian";
-          } else {
-            statusText = `Pesan baru dari ${item.nama || "Customer"}`;
-          }
-          
-          // Format waktu
-          let waktuFormatted = "Baru saja";
-          try {
-            const waktu = new Date(item.waktu);
-            if (!isNaN(waktu.getTime())) {
-              waktuFormatted = waktu.toLocaleString("id-ID", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-              });
-            }
-          } catch (e) {
-            console.warn("Error formatting date:", e);
-          }
-          
-          // Potong pesan jika terlalu panjang
-          const isiPesan = (item.isi || "No message").length > 100 ? 
-            (item.isi || "No message").substring(0, 100) + "..." : 
-            (item.isi || "No message");
-          
-          aktivitasList.innerHTML += `
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: ${index < pesanTerbaru.length - 1 ? '1.2rem' : '0'};">
+            } else {
+              aktivitasList.innerHTML = "";
+
+              pesanTerbaru.forEach((item, index) => {
+                let icon = "fa-comment";
+                let bg = "#667eea";
+                let statusText = "Pesan baru";
+
+                if (item.status === "otomatis") {
+                  icon = "fa-check-circle";
+                  bg = "#28a745";
+                  statusText = "Respon otomatis terkirim";
+                } else if (item.status === "perlu_perhatian") {
+                  icon = "fa-exclamation-triangle";
+                  bg = "#ffc107";
+                  statusText = "Pesan perlu perhatian";
+                } else {
+                  statusText = `Pesan baru dari ${item.nama || "Customer"}`;
+                }
+
+                // Format waktu
+                let waktuFormatted = "Baru saja";
+                try {
+                  const waktu = new Date(item.waktu);
+                  if (!isNaN(waktu.getTime())) {
+                    waktuFormatted = waktu.toLocaleString("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    });
+                  }
+                } catch (e) {
+                  console.warn("Error formatting date:", e);
+                }
+
+                // Potong pesan jika terlalu panjang
+                const isiPesan =
+                  (item.isi || "No message").length > 100
+                    ? (item.isi || "No message").substring(0, 100) + "..."
+                    : item.isi || "No message";
+
+                aktivitasList.innerHTML += `
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: ${index < pesanTerbaru.length - 1 ? "1.2rem" : "0"};">
               <div style="background: ${bg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                 <i class="fas ${icon}"></i>
               </div>
@@ -1413,29 +812,29 @@ document.addEventListener("DOMContentLoaded", async () => {
               </div>
             </div>
           `;
-        });
-      }
-    }
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Dashboard loading error:", err);
 
-  } catch (err) {
-    console.error("Dashboard loading error:", err);
-    
-    // Show error state dengan data fallback
-    showLoading(false);
-    
-    // Set fallback data
-    if (emailEl) emailEl.textContent = "demo@example.com";
-    if (namaEl) namaEl.textContent = "Demo UMKM";
-    if (sektorEl) sektorEl.textContent = "Demo Sektor";
-    if (sosmedEl) sosmedEl.textContent = "Instagram, WhatsApp";
-    if (bergabungEl) bergabungEl.textContent = new Date().toLocaleDateString("id-ID");
-    
-    if (pesanMasukEl) pesanMasukEl.textContent = "0";
-    if (responOtomatisEl) responOtomatisEl.textContent = "0";
-    if (perluPerhatianEl) perluPerhatianEl.textContent = "0";
-    
-    if (aktivitasList) {
-      aktivitasList.innerHTML = `
+          // Show error state dengan data fallback
+          showLoading(false);
+
+          // Set fallback data
+          if (emailEl) emailEl.textContent = "demo@example.com";
+          if (namaEl) namaEl.textContent = "Demo UMKM";
+          if (sektorEl) sektorEl.textContent = "Demo Sektor";
+          if (sosmedEl) sosmedEl.textContent = "Instagram, WhatsApp";
+          if (bergabungEl)
+            bergabungEl.textContent = new Date().toLocaleDateString("id-ID");
+
+          if (pesanMasukEl) pesanMasukEl.textContent = "0";
+          if (responOtomatisEl) responOtomatisEl.textContent = "0";
+          if (perluPerhatianEl) perluPerhatianEl.textContent = "0";
+
+          if (aktivitasList) {
+            aktivitasList.innerHTML = `
         <div style="text-align: center; color: #dc3545; padding: 2rem;">
           <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 1rem;"></i>
           <div style="margin-bottom: 0.5rem;">Gagal memuat data dashboard</div>
@@ -1455,12 +854,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           </button>
         </div>
       `;
-    }
-    
-    // Optional: Show toast notification
-    const showErrorToast = () => {
-      const toast = document.createElement('div');
-      toast.style.cssText = `
+          }
+
+          // Optional: Show toast notification
+          const showErrorToast = () => {
+            const toast = document.createElement("div");
+            toast.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -1472,33 +871,33 @@ document.addEventListener("DOMContentLoaded", async () => {
         z-index: 1000;
         animation: slideIn 0.3s ease;
       `;
-      toast.innerHTML = `
+            toast.innerHTML = `
         <i class="fas fa-exclamation-circle"></i>
         Gagal memuat dashboard. Menggunakan data demo.
       `;
-      
-      // Add animation
-      const style = document.createElement('style');
-      style.textContent = `
+
+            // Add animation
+            const style = document.createElement("style");
+            style.textContent = `
         @keyframes slideIn {
           from { transform: translateX(100%); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
         }
       `;
-      document.head.appendChild(style);
-      document.body.appendChild(toast);
-      
-      // Auto remove after 5 seconds
-      setTimeout(() => {
-        toast.style.animation = 'slideIn 0.3s ease reverse';
-        setTimeout(() => toast.remove(), 300);
-      }, 5000);
-    };
-    
-    showErrorToast();
-  }
-});
-</script>
-<ScriptWaDashboard/>
-</body>
+            document.head.appendChild(style);
+            document.body.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+              toast.style.animation = "slideIn 0.3s ease reverse";
+              setTimeout(() => toast.remove(), 300);
+            }, 5000);
+          };
+
+          showErrorToast();
+        }
+      });
+    </script>
+    <ScriptWaDashboard />
+  </body>
 </html>

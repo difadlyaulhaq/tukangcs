@@ -1,6 +1,7 @@
 ---
 import ScriptWaDashboard from "src/components/scripts/script-wa-dashboard.astro";
 import "../app.css";
+import Knowledgebase from "src/components/scripts/knowledgebase.astro";
 ---
 
 <!doctype html>
@@ -327,98 +328,7 @@ import "../app.css";
         </div>
 
         <!-- Knowledge Base Section -->
-        <div id="knowledge-base" class="content-section">
-          <div class="card">
-            <h2 class="card-title">
-              <i class="fas fa-folder-open"></i> Knowledge Base
-            </h2>
-            <p>
-              Upload dokumen perusahaan dan data teks untuk melatih chatbot AI
-              Anda.
-            </p>
-
-            <div class="form-group">
-              <label class="form-label">Upload Dokumen Perusahaan</label>
-              <div
-                class="upload-area"
-                onclick="document.getElementById('fileInput').click()"
-              >
-                <div class="upload-icon">
-                  <i class="fas fa-cloud-upload-alt"></i>
-                </div>
-                <p>Klik untuk upload dokumen (PDF, DOC, TXT)</p>
-                <small>Maksimal 10MB per file</small>
-              </div>
-              <input
-                type="file"
-                id="fileInput"
-                style="display: none;"
-                multiple
-                accept=".pdf,.doc,.docx,.txt"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Tambah Data Teks</label>
-              <textarea
-                class="form-textarea"
-                placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya..."
-              ></textarea>
-              <button class="btn" style="margin-top: 0.5rem;">
-                <i class="fas fa-save"></i> Simpan Data Teks
-              </button>
-            </div>
-
-            <h3 style="margin: 2rem 0 1rem 0;">
-              <i class="fas fa-file-alt"></i> Dokumen Tersimpan
-            </h3>
-
-            <div class="document-item">
-              <div class="document-info">
-                <span class="document-icon"
-                  ><i class="fas fa-file-pdf"></i></span
-                >
-                <div>
-                  <h4>Katalog Produk 2025.pdf</h4>
-                  <small>Diupload 20 Juni 2025 • 2.3 MB</small>
-                </div>
-              </div>
-              <button class="btn btn-danger">
-                <i class="fas fa-trash"></i> Hapus
-              </button>
-            </div>
-
-            <div class="document-item">
-              <div class="document-info">
-                <span class="document-icon"
-                  ><i class="fas fa-file-alt"></i></span
-                >
-                <div>
-                  <h4>FAQ Pelanggan</h4>
-                  <small>Data teks • 1,245 karakter</small>
-                </div>
-              </div>
-              <button class="btn btn-danger">
-                <i class="fas fa-trash"></i> Hapus
-              </button>
-            </div>
-
-            <div class="document-item">
-              <div class="document-info">
-                <span class="document-icon"
-                  ><i class="fas fa-file-word"></i></span
-                >
-                <div>
-                  <h4>Kebijakan Return.docx</h4>
-                  <small>Diupload 19 Juni 2025 • 1.1 MB</small>
-                </div>
-              </div>
-              <button class="btn btn-danger">
-                <i class="fas fa-trash"></i> Hapus
-              </button>
-            </div>
-          </div>
-        </div>
+        <Knowledgebase />
 
         <!-- Sentiment Analysis Section -->
         <div id="sentiment-analysis" class="content-section">
