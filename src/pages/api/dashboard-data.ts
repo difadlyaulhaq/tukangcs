@@ -1,7 +1,5 @@
 import type { APIRoute } from "astro";
-import { initializeApp, cert, getApps } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
-import { adminAuth } from "src/lib/firebase-admin";
+import { adminAuth, adminDb } from "../../lib/firebase-admin";
 import { jwtDecode } from "jwt-decode";
 
 // Type definitions
@@ -25,60 +23,91 @@ interface PesanData {
   [key: string]: any;
 }
 
-// Inisialisasi Firebase Admin SDK
-if (!getApps().length) {
-  try {
-    initializeApp({
-      credential: cert({
-        projectId: import.meta.env.FIREBASE_PROJECT_ID,
-        clientEmail: import.meta.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: import.meta.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-      }),
-    });
-  } catch (error) {
-    console.error("Firebase initialization error:", error);
-  }
-}
-
-const db = getFirestore();
-
 export const GET: APIRoute = async ({ cookies }) => {
+  console.log('Dashboard data API called at:', new Date().toISOString());
+  
   try {
-    // Validasi environment variables
-    if (
-      !import.meta.env.FIREBASE_PROJECT_ID ||
-      !import.meta.env.FIREBASE_CLIENT_EMAIL ||
-      !import.meta.env.FIREBASE_PRIVATE_KEY
-    ) {
-      throw new Error("Missing Firebase configuration");
-    }
-
-    let userId = cookies.get("session")?.value;
-
-    // Jika tidak ada user_id di cookie, ambil user pertama dari Firestore
-    let user: UserData = {};
-    if (!userId) {
+    // Cek berbagai kemungkinan nama session cookie
+    const sessionCookie = cookies.get("__session")?.value || 
+                         cookies.get("session")?.value || 
+                         cookies.get("sessionId")?.value;
+    
+    const userIdCookie = cookies.get("user_id")?.value;
+    
+    console.log('Session cookie exists:', !!sessionCookie);
+    console.log('User ID cookie exists:', !!userIdCookie);
+    
+    if (!sessionCookie && !userIdCookie) {
       return new Response(
         JSON.stringify({
-          error: "User ID not found in cookies",
+          error: "No session found",
+          requiresAuth: true
         }),
         {
-          status: 400,
+          status: 401,
           headers: {
             "Content-Type": "application/json",
             "Cache-Control": "no-cache",
           },
         }
       );
-    } else {
-      const decodedToken: {
-        name: string;
-        email: string;
-        user_id: string;
-      } = jwtDecode(cookies.get("session")?.value || "");
-      const userDoc = await db.collection("users").doc(decodedToken.user_id).get();
-      user = userDoc.exists ? (userDoc.data() as UserData) || {} : {};
     }
+
+    let userId = userIdCookie;
+    let user: UserData = {};
+
+    try {
+      // Jika ada session cookie, decode untuk mendapatkan user info
+      if (sessionCookie) {
+        // Verify session cookie dengan Firebase Admin
+        const decodedClaims = await adminAuth.verifySessionCookie(sessionCookie, true);
+        userId = decodedClaims.uid;
+        console.log('Session verified for user:', userId);
+      }
+
+      // Jika masih tidak ada userId, return error
+      if (!userId) {
+        return new Response(
+          JSON.stringify({
+            error: "User ID not found",
+            requiresAuth: true
+          }),
+          {
+            status: 401,
+            headers: {
+              "Content-Type": "application/json",
+              "Cache-Control": "no-cache",
+            },
+          }
+        );
+      }
+
+      // Ambil data user dari Firestore
+      const userDoc = await adminDb.collection("users").doc(userId).get();
+      if (userDoc.exists) {
+        user = userDoc.data() as UserData;
+        console.log('User data loaded:', user.email);
+      } else {
+        console.log('User document not found for ID:', userId);
+      }
+
+    } catch (authError) {
+      console.error('Authentication error:', authError);
+      return new Response(
+        JSON.stringify({
+          error: "Invalid session",
+          requiresAuth: true
+        }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache",
+          },
+        }
+      );
+    }
+
     // Pastikan sosmed selalu array
     let sosmed: string[] = [];
     if (Array.isArray(user.sosmed)) {
@@ -99,12 +128,17 @@ export const GET: APIRoute = async ({ cookies }) => {
 
     // Ambil pesan terbaru
     let pesan: PesanData[] = [];
+    let pesanMasukCount = 0;
+    let responOtomatisCount = 0;
+    let perluPerhatianCount = 0;
+
     try {
-      const pesanSnap = await db
+      // Ambil pesan terbaru
+      const pesanSnap = await adminDb
         .collection("pesan")
         .where("userId", "==", userId)
         .orderBy("waktu", "desc")
-        .limit(3)
+        .limit(5)
         .get();
 
       pesan = pesanSnap.docs.map((doc) => {
@@ -117,44 +151,39 @@ export const GET: APIRoute = async ({ cookies }) => {
           status: data.status || "baru",
         };
       });
-    } catch (pesanError) {
-      console.warn("Error fetching messages:", pesanError);
-      pesan = [];
-    }
 
-    // Hitung statistik
-    let pesanMasukCount = 0;
-    let responOtomatisCount = 0;
-    let perluPerhatianCount = 0;
-    try {
+      // Hitung statistik
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const todayISO = today.toISOString();
 
-      const pesanMasukSnap = await db
+      // Pesan masuk hari ini
+      const pesanMasukSnap = await adminDb
         .collection("pesan")
         .where("userId", "==", userId)
-        .where("waktu", ">=", today.toISOString())
+        .where("waktu", ">=", todayISO)
         .get();
       pesanMasukCount = pesanMasukSnap.size;
 
-      const responOtomatisSnap = await db
+      // Respon otomatis
+      const responOtomatisSnap = await adminDb
         .collection("pesan")
         .where("userId", "==", userId)
         .where("status", "==", "otomatis")
         .get();
       responOtomatisCount = responOtomatisSnap.size;
 
-      const perluPerhatianSnap = await db
+      // Perlu perhatian
+      const perluPerhatianSnap = await adminDb
         .collection("pesan")
         .where("userId", "==", userId)
         .where("status", "==", "perlu_perhatian")
         .get();
       perluPerhatianCount = perluPerhatianSnap.size;
-    } catch (statsError) {
-      console.warn("Error fetching statistics:", statsError);
-      pesanMasukCount = 0;
-      responOtomatisCount = 0;
-      perluPerhatianCount = 0;
+
+    } catch (firestoreError) {
+      console.warn("Error fetching Firestore data:", firestoreError);
+      // Biarkan dengan nilai default 0 dan array kosong
     }
 
     const responseData = {
@@ -173,6 +202,11 @@ export const GET: APIRoute = async ({ cookies }) => {
       },
     };
 
+    console.log('Dashboard data response:', {
+      userEmail: responseData.user.email,
+      pesanCount: responseData.stats.pesanTerbaru.length
+    });
+
     return new Response(JSON.stringify(responseData), {
       status: 200,
       headers: {
@@ -180,32 +214,23 @@ export const GET: APIRoute = async ({ cookies }) => {
         "Cache-Control": "no-cache",
       },
     });
-  } catch (err) {
-    console.error("DASHBOARD API ERROR:", err);
 
-    // Fallback response jika semua gagal
-    const fallbackData = {
-      user: {
-        email: "demo@example.com",
-        nama_umkm: "Demo UMKM",
-        sektor: "Demo Sektor",
-        sosmed: ["Instagram", "WhatsApp"],
-        bergabung: new Date().toLocaleDateString("id-ID"),
-      },
-      stats: {
-        pesanMasuk: 0,
-        responOtomatis: 0,
-        perluPerhatian: 0,
-        pesanTerbaru: [] as PesanData[],
-      },
-    };
+  } catch (error: any) {
+    console.error("DASHBOARD API ERROR:", error);
 
-    return new Response(JSON.stringify(fallbackData), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache",
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+        message: error.message,
+        requiresAuth: false
+      }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
   }
 };

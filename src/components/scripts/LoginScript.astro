@@ -1,5 +1,7 @@
 //components/scripts/LoginScript.astro
 <script is:inline type="module">
+  import { signInWithCustomToken, getAuth } from "firebase/auth";
+
   function showTab(tab) {
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
@@ -61,18 +63,29 @@
       });
       const data = await res.json();
       console.log('Login response:', data);
+      
       if (res.ok && data.success) {
-// Store session data in localStorage for client-side access
+        // Store session data in localStorage for client-side access
         localStorage.setItem('firebase_session', JSON.stringify(data.session));
         localStorage.setItem('firebase_user', JSON.stringify(data.user));
         
-        showMessage('login-message', 'Login berhasil, mengalihkan...', 'success');
-        // Paksa reload agar cookie session terbaca oleh browser
-        window.location.href = '/dashboard';
-        // Atau jika ingin reload halaman saat ini:
-        // window.location.reload();
+        // --- Firebase Auth client-side sign-in ---
+        const { access_token } = data.session;
+        if (access_token) {
+          try {
+            const auth = getAuth();
+            await signInWithCustomToken(auth, access_token);
+            console.log('Firebase Auth sign-in successful');
+          } catch (firebaseError) {
+            console.error('Firebase Auth sign-in error:', firebaseError);
+            // Continue with the flow even if Firebase Auth fails
+          }
+        }
+        // ---------------------------------------
         
         showMessage('login-message', 'Login berhasil, mengalihkan...', 'success');
+        
+        // Redirect to dashboard
         setTimeout(() => {
           window.location.href = '/dashboard';
         }, 1000);
@@ -138,14 +151,32 @@
   window.showTab = showTab;
 
   // Session check - redirect if already logged in
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     const session = localStorage.getItem('firebase_session');
     if (session) {
       try {
         const parsed = JSON.parse(session);
         // Check if session is still valid
         if (parsed.expires_at && parsed.expires_at * 1000 > Date.now()) {
-          window.location.href = '/dashboard';
+          // Also check Firebase Auth state
+          const auth = getAuth();
+          if (auth.currentUser) {
+            window.location.href = '/dashboard';
+          } else {
+            // Try to restore Firebase Auth session
+            const { access_token } = parsed;
+            if (access_token) {
+              try {
+                await signInWithCustomToken(auth, access_token);
+                window.location.href = '/dashboard';
+              } catch (error) {
+                console.error('Failed to restore Firebase Auth session:', error);
+                // Clean up invalid session
+                localStorage.removeItem('firebase_session');
+                localStorage.removeItem('firebase_user');
+              }
+            }
+          }
         } else {
           // Session expired, clean up
           localStorage.removeItem('firebase_session');

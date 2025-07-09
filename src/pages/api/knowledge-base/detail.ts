@@ -1,10 +1,11 @@
-// src/pages/api/knowledge-base/delete.ts
+// src/pages/api/knowledge-base/detail.ts
 import type { APIRoute } from 'astro';
 import { adminDb } from '../../../lib/firebase-admin';
 
-export const DELETE: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async ({ request, url }) => {
   try {
-    const { id, userId } = await request.json();
+    const id = url.searchParams.get('id');
+    const userId = url.searchParams.get('userId');
 
     if (!id || !userId) {
       return new Response(JSON.stringify({ 
@@ -33,30 +34,32 @@ export const DELETE: APIRoute = async ({ request }) => {
     // Check if user is owner
     if (docData?.userId !== userId) {
       return new Response(JSON.stringify({ 
-        error: 'Anda tidak memiliki akses untuk menghapus knowledge ini' 
+        error: 'Anda tidak memiliki akses untuk melihat knowledge ini' 
       }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    // Delete document
-    await docRef.delete();
-
     return new Response(JSON.stringify({ 
       success: true,
-      message: 'Knowledge berhasil dihapus',
-      deletedId: id,
-      deletedTitle: docData?.title || 'Unknown'
+      data: {
+        id: doc.id,
+        title: docData.title || 'Untitled',
+        content: docData.content || '',
+        userId: docData.userId,
+        createdAt: docData.createdAt,
+        updatedAt: docData.updatedAt
+      }
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
-    console.error('Delete knowledge error:', error);
+    console.error('Get knowledge detail error:', error);
     return new Response(JSON.stringify({ 
-      error: 'Gagal menghapus knowledge',
+      error: 'Gagal mengambil detail knowledge',
       details: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,

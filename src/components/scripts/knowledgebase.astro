@@ -2,419 +2,524 @@
 // src/components/KnowledgeBase.astro
 ---
 
-<!-- Knowledge Base Section -->
 <div id="knowledge-base" class="content-section">
   <div class="card">
     <h2 class="card-title">
-      <i class="fas fa-folder-open"></i> Knowledge Base
+      <i class="fas fa-database"></i> Knowledge Base
     </h2>
     <p>
-      Upload dokumen perusahaan dan data teks untuk melatih chatbot AI
-      Anda.
+      Kelola data pengetahuan untuk melatih chatbot AI Anda. Siapa saja dapat menambahkan data, namun Anda harus login untuk melihat dan mengelola data yang telah Anda simpan.
     </p>
 
-    <div class="form-group">
-      <label class="form-label">Upload Dokumen Perusahaan</label>
-      <div
-        class="upload-area"
-        onclick="document.getElementById('fileInput').click()"
-      >
-        <div class="upload-icon">
-          <i class="fas fa-cloud-upload-alt"></i>
+    <div id="userInfoSection" class="user-info-section" style="display: none;">
+      <div class="user-info-content">
+        <div class="user-info-item">
+          <span class="user-info-label"><i class="fas fa-envelope"></i> Email:</span>
+          <span id="userEmail" class="user-info-value">-</span>
         </div>
-        <p>Klik untuk upload dokumen (PDF, DOC, TXT)</p>
-        <small>Maksimal 10MB per file</small>
+        <div class="user-info-item">
+          <span class="user-info-label"><i class="fas fa-store"></i> UMKM:</span>
+          <span id="userUmkmName" class="user-info-value">-</span>
+        </div>
       </div>
-      <input
-        type="file"
-        id="fileInput"
-        style="display: none;"
-        multiple
-        accept=".pdf,.doc,.docx,.txt"
-      />
     </div>
 
-    <div class="form-group">
-      <label class="form-label">Tambah Data Teks</label>
-      <textarea
-        class="form-textarea"
-        placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya..."
-      ></textarea>
-      <button class="btn" style="margin-top: 0.5rem;">
-        <i class="fas fa-save"></i> Simpan Data Teks
-      </button>
+    <div id="addKnowledgeForm">
+      <div class="form-group">
+        <label class="form-label">Judul Knowledge</label>
+        <input
+          type="text"
+          id="knowledgeTitle"
+          class="form-input"
+          placeholder="Masukkan judul knowledge (minimal 3 karakter)"
+          maxlength="200"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Konten Knowledge</label>
+        <textarea
+          id="knowledgeContent"
+          class="form-textarea"
+          placeholder="Masukkan informasi tentang produk, layanan, FAQ, atau data perusahaan lainnya... (minimal 200 karakter)"
+          rows="8"
+        ></textarea>
+        <div class="character-counter">
+          <span id="charCount">0</span> karakter (minimal 200)
+        </div>
+      </div>
+
+      <div class="form-actions">
+      <button id="saveKnowledgeBtn" class="btn btn-primary" disabled>
+           <i class="fas fa-spinner fa-spin"></i> Memuat...
+        </button>
+        <button id="clearFormBtn" class="btn btn-secondary">
+          <i class="fas fa-eraser"></i> Bersihkan Form
+        </button>
+      </div>
     </div>
 
-    <h3 style="margin: 2rem 0 1rem 0;">
-      <i class="fas fa-file-alt"></i> Dokumen Tersimpan
-    </h3>
+    <div id="savedKnowledgeSection" style="display: none;">
+      <div class="knowledge-header">
+        <h3>
+          <i class="fas fa-list"></i> Data Knowledge Tersimpan Anda
+        </h3>
+        <div class="knowledge-stats">
+          <span id="totalCount">0</span> data knowledge
+        </div>
+      </div>
 
-    <!-- Container untuk dokumen yang akan diisi oleh JavaScript -->
-    <div id="documents-container">
-      <!-- Dokumen akan dimuat secara dinamis -->
+      <div class="search-section">
+        <div class="search-input-container">
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Cari knowledge berdasarkan judul atau konten..."
+          />
+          <i class="fas fa-search search-icon"></i>
+        </div>
+      </div>
+
+      <div id="loadingState" class="loading-state" style="display: none;">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Memuat data knowledge...</span>
+      </div>
+
+      <div id="knowledge-container">
+        </div>
+
+      <div id="pagination" class="pagination-container" style="display: none;">
+        <button id="prevBtn" class="btn btn-outline">
+          <i class="fas fa-chevron-left"></i> Sebelumnya
+        </button>
+        <div id="pageInfo" class="page-info">
+          Halaman <span id="currentPage">1</span> dari <span id="totalPages">1</span>
+        </div>
+        <button id="nextBtn" class="btn btn-outline">
+          Selanjutnya <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+     <div id="loginPrompt" class="empty-state" style="display: none;">
+        <div class="empty-content">
+            <i class="fas fa-sign-in-alt"></i>
+            <h4>Login untuk Melihat Data</h4>
+            <p>Silakan login untuk melihat dan mengelola data knowledge Anda.</p>
+        </div>
     </div>
   </div>
 </div>
 
-<!-- Notification untuk feedback user -->
-<div id="notification" style="display: none;">
-  <!-- Akan diisi oleh JavaScript -->
+<div id="notification" class="notification"></div>
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4><i class="fas fa-trash"></i> Konfirmasi Hapus</h4>
+      <button id="closeModal" class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Apakah Anda yakin ingin menghapus knowledge ini?</p>
+      <div class="knowledge-preview">
+        <strong id="deleteTitle"></strong>
+        <p id="deletePreview"></p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="confirmDelete" class="btn btn-danger"><i class="fas fa-trash"></i> Hapus</button>
+      <button id="cancelDelete" class="btn btn-secondary"><i class="fas fa-times"></i> Batal</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// Knowledge Base Frontend Script with TypeScript fixes
-interface Document {
-  id: string;
-  title: string;
-  type: 'file' | 'text';
-  fileUrl?: string;
-  fileName?: string;
-  originalName?: string;
-  fileSize?: number;
-  mimeType?: string;
-  content?: string;
-  characterCount?: number;
-  wordCount?: number;
-  uploadedAt: any;
-  createdAt?: string;
-}
+  import { onAuthStateChange } from '../../lib/auth-helper';
+  import type { User } from 'firebase/auth';
 
-interface ApiResponse<T> {
-  success: boolean;
-  error?: string;
-  documents?: T[];
-  message?: string;
-  docId?: string;
-  characterCount?: number;
-  wordCount?: number;
-  fileName?: string;
-  fileUrl?: string;
-  details?: string;
-}
-
-type NotificationType = 'success' | 'error' | 'warning' | 'info';
-
-declare global {
-  interface Window {
-    deleteDocument: (docId: string, title: string) => Promise<void>;
-  }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  // DOM Elements with proper type assertions
-  const fileInput = document.getElementById('fileInput') as HTMLInputElement | null;
-  const textArea = document.querySelector('.form-textarea') as HTMLTextAreaElement | null;
-  const saveTextBtn = textArea?.nextElementSibling as HTMLButtonElement | null;
-  const documentsContainer = document.getElementById('documents-container') as HTMLElement | null;
-  
-  // Initialize
-  loadDocuments();
-
-  // File Upload Handler
-  if (fileInput) {
-    fileInput.addEventListener('change', handleFileUpload);
+  // --- INTERFACES ---
+  interface KnowledgeData {
+    id: string;
+    title: string;
+    content: string;
+    userId: string | null;
+    email?: string | null;
+    nama_umkm?: string | null;
+    createdAt: any;
+    updatedAt: any;
   }
 
-  // Save Text Handler
-  if (saveTextBtn) {
-    saveTextBtn.addEventListener('click', handleSaveText);
+  interface ApiResponse<T> {
+    success: boolean;
+    error?: string;
+    data?: T;
+    pagination?: {
+      currentPage: number;
+      totalPages: number;
+      totalDocuments: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
   }
 
-  // Handle File Upload
-  async function handleFileUpload(event: Event): Promise<void> {
-    const target = event.target as HTMLInputElement;
-    const files = target.files;
-    if (!files || files.length === 0) return;
+  type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
-    for (let file of files) {
-      await uploadFile(file);
-    }
-    
-    // Clear input
-    if (fileInput) {
-      fileInput.value = '';
-    }
-    
-    // Reload documents
-    loadDocuments();
-  }
-
-  // Upload File Function
-  async function uploadFile(file: File): Promise<void> {
-    try {
-      showNotification('Mengupload file...', 'info');
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('title', file.name);
-
-      const response = await fetch('/api/knowledge-base/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      const result: ApiResponse<never> = await response.json();
-
-      if (result.success) {
-        showNotification(`File ${file.name} berhasil diupload`, 'success');
-      } else {
-        throw new Error(result.error || 'Gagal upload file');
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showNotification(`Gagal upload ${file.name}: ${errorMessage}`, 'error');
+  declare global {
+    interface Window {
+      deleteKnowledge: (id: string, title: string, content: string) => void;
     }
   }
 
-  // Handle Save Text
-  async function handleSaveText(): Promise<void> {
-    const content = textArea?.value?.trim();
-    
-    if (!content) {
-      showNotification('Masukkan data teks terlebih dahulu', 'warning');
-      return;
-    }
+  document.addEventListener("DOMContentLoaded", () => {
+    // --- DOM ELEMENTS ---
+    const titleInput = document.getElementById('knowledgeTitle') as HTMLInputElement;
+    const contentTextarea = document.getElementById('knowledgeContent') as HTMLTextAreaElement;
+    const saveBtn = document.getElementById('saveKnowledgeBtn') as HTMLButtonElement;
+    const clearBtn = document.getElementById('clearFormBtn') as HTMLButtonElement;
+    const charCount = document.getElementById('charCount') as HTMLElement;
+    const userInfoSection = document.getElementById('userInfoSection') as HTMLElement;
+    const userEmailSpan = document.getElementById('userEmail') as HTMLElement;
+    const userUmkmSpan = document.getElementById('userUmkmName') as HTMLElement;
+    const savedKnowledgeSection = document.getElementById('savedKnowledgeSection') as HTMLElement;
+    const searchInput = document.getElementById('searchInput') as HTMLInputElement;
+    const knowledgeContainer = document.getElementById('knowledge-container') as HTMLElement;
+    const loadingState = document.getElementById('loadingState') as HTMLElement;
+    const totalCount = document.getElementById('totalCount') as HTMLElement;
+    const loginPrompt = document.getElementById('loginPrompt') as HTMLElement;
+    const pagination = document.getElementById('pagination') as HTMLElement;
+    const prevBtn = document.getElementById('prevBtn') as HTMLButtonElement;
+    const nextBtn = document.getElementById('nextBtn') as HTMLButtonElement;
+    const currentPageSpan = document.getElementById('currentPage') as HTMLElement;
+    const totalPagesSpan = document.getElementById('totalPages') as HTMLElement;
+    const deleteModal = document.getElementById('deleteModal') as HTMLElement;
+    const closeModal = document.getElementById('closeModal') as HTMLButtonElement;
+    const confirmDelete = document.getElementById('confirmDelete') as HTMLButtonElement;
+    const cancelDelete = document.getElementById('cancelDelete') as HTMLButtonElement;
+    const deleteTitle = document.getElementById('deleteTitle') as HTMLElement;
+    const deletePreview = document.getElementById('deletePreview') as HTMLElement;
 
-    if (content.length < 10) {
-      showNotification('Data teks minimal 10 karakter', 'warning');
-      return;
-    }
+    // --- STATE ---
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchTerm = '';
+    let pendingDeleteId = '';
+    let currentUserId: string | null = null;
+    let currentUserEmail: string | null = null;
+    let currentUserUmkmName: string | null = null;
+    let isUserAuthenticated = false;
 
-    try {
-      showNotification('Menyimpan data teks...', 'info');
-      
-      // Generate title from first line or first 50 characters
-      const title = content.split('\n')[0].substring(0, 50) + (content.length > 50 ? '...' : '');
+    // --- INITIALIZATION ---
+    setupEventListeners();
+    onAuthStateChange(handleAuthStateChange);
 
-      const response = await fetch('/api/knowledge-base/text', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          title: title,
-          content: content
-        })
-      });
-
-      const result: ApiResponse<never> = await response.json();
-
-      if (result.success) {
-        if (textArea) {
-          textArea.value = '';
-        }
-        showNotification('Data teks berhasil disimpan', 'success');
-        loadDocuments();
-      } else {
-        throw new Error(result.error || 'Gagal menyimpan data teks');
-      }
-    } catch (error) {
-      console.error('Save text error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showNotification(`Gagal menyimpan: ${errorMessage}`, 'error');
-    }
-  }
-
-  // Load Documents
-  async function loadDocuments(): Promise<void> {
-    try {
-      const response = await fetch('/api/knowledge-base/list');
-      const result: ApiResponse<Document> = await response.json();
-
-      if (result.success && result.documents) {
-        displayDocuments(result.documents);
-      } else {
-        throw new Error(result.error || 'Gagal memuat dokumen');
-      }
-    } catch (error) {
-      console.error('Load documents error:', error);
-      showNotification('Gagal memuat dokumen', 'error');
-    }
-  }
-
-  // Display Documents
-  function displayDocuments(documents: Document[]): void {
-    if (!documentsContainer) return;
-
-    // Clear existing documents
-    documentsContainer.innerHTML = '';
-
-    if (documents.length === 0) {
-      const emptyState = document.createElement('div');
-      emptyState.className = 'empty-state';
-      emptyState.innerHTML = `
-        <div style="text-align: center; padding: 2rem; color: #666;">
-          <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-          <p>Belum ada dokumen tersimpan</p>
-          <small>Upload file atau tambah data teks untuk memulai</small>
-        </div>
-      `;
-      documentsContainer.appendChild(emptyState);
-      return;
-    }
-
-    documents.forEach(doc => {
-      const docItem = createDocumentItem(doc);
-      documentsContainer.appendChild(docItem);
-    });
-  }
-
-  // Create Document Item
-  function createDocumentItem(doc: Document): HTMLElement {
-    const docItem = document.createElement('div');
-    docItem.className = 'document-item';
-    docItem.setAttribute('data-doc-id', doc.id);
-
-    const icon = getDocumentIcon(doc);
-    const info = getDocumentInfo(doc);
-
-    docItem.innerHTML = `
-      <div class="document-info">
-        <span class="document-icon">${icon}</span>
-        <div>
-          <h4>${doc.title}</h4>
-          <small>${info}</small>
-        </div>
-      </div>
-      <button class="btn btn-danger" onclick="deleteDocument('${doc.id}', '${doc.title}')">
-        <i class="fas fa-trash"></i> Hapus
-      </button>
-    `;
-
-    return docItem;
-  }
-
-  // Get Document Icon
-  function getDocumentIcon(doc: Document): string {
-    if (doc.type === 'text') {
-      return '<i class="fas fa-file-alt"></i>';
-    }
-    
-    switch (doc.mimeType) {
-      case 'application/pdf':
-        return '<i class="fas fa-file-pdf"></i>';
-      case 'application/msword':
-      case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        return '<i class="fas fa-file-word"></i>';
-      case 'text/plain':
-        return '<i class="fas fa-file-alt"></i>';
-      default:
-        return '<i class="fas fa-file"></i>';
-    }
-  }
-
-  // Get Document Info
-  function getDocumentInfo(doc: Document): string {
-    if (doc.type === 'text') {
-      return `Data teks • ${doc.characterCount || 0} karakter`;
-    }
-    
-    const fileSize = formatFileSize(doc.fileSize || 0);
-    const uploadDate = formatDate(doc.createdAt || doc.uploadedAt);
-    return `Diupload ${uploadDate} • ${fileSize}`;
-  }
-
-  // Format File Size
-  function formatFileSize(bytes: number): string {
-    if (!bytes) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-  }
-
-  // Format Date
-  function formatDate(dateInput: any): string {
-    let date: Date;
-    if (dateInput && dateInput.seconds) {
-      // Firestore timestamp
-      date = new Date(dateInput.seconds * 1000);
-    } else if (dateInput) {
-      date = new Date(dateInput);
-    } else {
-      return 'Tidak diketahui';
-    }
-    
-    return date.toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-  }
-
-  // Delete Document (global function)
-  window.deleteDocument = async function(docId: string, title: string): Promise<void> {
-    if (!confirm(`Apakah Anda yakin ingin menghapus "${title}"?`)) {
-      return;
-    }
-
-    try {
-      showNotification('Menghapus dokumen...', 'info');
-      
-      const response = await fetch('/api/knowledge-base/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ docId })
-      });
-
-      const result: ApiResponse<never> = await response.json();
-
-      if (result.success) {
-        showNotification('Dokumen berhasil dihapus', 'success');
+    // --- AUTHENTICATION & UI LOGIC ---
+    async function handleAuthStateChange(user: User | null) {
+      if (user) {
+        // User is logged in
+        isUserAuthenticated = true;
+        currentUserId = user.uid;
         
-        // Remove from DOM
-        const docItem = document.querySelector(`[data-doc-id="${docId}"]`);
-        if (docItem) {
-          docItem.remove();
-        }
+        loginPrompt.style.display = 'none';
+        savedKnowledgeSection.style.display = 'block';
         
-        // Reload if no items left
-        const remainingItems = document.querySelectorAll('.document-item');
-        if (remainingItems.length === 0) {
-          loadDocuments();
+        try {
+          showNotification('Autentikasi berhasil, memuat data Anda...', 'info');
+          await fetchDashboardData();
+          await loadKnowledgeData();
+        } catch (error) {
+            console.error("Initialization error for logged in user:", error);
+            showNotification('Gagal memuat semua data pengguna.', 'error');
+        } finally {
+            // **PERBAIKAN UTAMA**: Tombol diaktifkan setelah semua data coba dimuat
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Knowledge';
         }
-      } else {
-        throw new Error(result.error || 'Gagal menghapus dokumen');
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showNotification(`Gagal menghapus: ${errorMessage}`, 'error');
-    }
-  };
 
-  // Show Notification Function
-  function showNotification(message: string, type: NotificationType = 'info'): void {
-    const notification = document.getElementById('notification');
-    if (notification) {
+      } else {
+        // User is logged out or anonymous
+        isUserAuthenticated = false;
+        currentUserId = null;
+        currentUserEmail = null;
+        currentUserUmkmName = null;
+        
+        userInfoSection.style.display = 'none';
+        savedKnowledgeSection.style.display = 'none';
+        loginPrompt.style.display = 'block';
+
+        // **PERBAIKAN UTAMA**: Aktifkan tombol untuk pengguna anonim
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Knowledge';
+      }
+    }
+
+    async function fetchDashboardData(): Promise<void> {
+      if (!isUserAuthenticated) return;
+      try {
+        const response = await fetch('/api/dashboard-data');
+        if (!response.ok) throw new Error('Gagal mengambil data dashboard');
+        
+        const result = await response.json();
+        if (result.user) {
+          currentUserEmail = result.user.email;
+          currentUserUmkmName = result.user.nama_umkm;
+          updateUserInfoUI();
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        showNotification('Gagal memuat informasi profil Anda.', 'error');
+        // Re-throw agar bisa ditangkap oleh block `catch` di `handleAuthStateChange` jika diperlukan
+        throw error;
+      }
+    }
+
+    function updateUserInfoUI(): void {
+      if (currentUserEmail) {
+        userEmailSpan.textContent = currentUserEmail;
+        userUmkmSpan.textContent = currentUserUmkmName || 'Tidak ada';
+        userInfoSection.style.display = 'block';
+      } else {
+        userInfoSection.style.display = 'none';
+      }
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners(): void {
+      contentTextarea.addEventListener('input', updateCharCounter);
+      saveBtn.addEventListener('click', handleSaveKnowledge);
+      clearBtn.addEventListener('click', clearForm);
+      
+      let searchTimeout: NodeJS.Timeout;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          searchTerm = searchInput.value.trim();
+          currentPage = 1;
+          loadKnowledgeData();
+        }, 500);
+      });
+      
+      prevBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; loadKnowledgeData(); } });
+      nextBtn.addEventListener('click', () => { if (currentPage < totalPages) { currentPage++; loadKnowledgeData(); } });
+      
+      closeModal.addEventListener('click', closeDeleteModal);
+      cancelDelete.addEventListener('click', closeDeleteModal);
+      confirmDelete.addEventListener('click', handleConfirmDelete);
+      
+      window.addEventListener('click', (e) => { if (e.target === deleteModal) closeDeleteModal(); });
+    }
+
+    // --- CORE FUNCTIONS ---
+    function updateCharCounter(): void {
+      const count = contentTextarea.value.length;
+      charCount.textContent = count.toString();
+      charCount.style.color = count < 200 ? '#dc3545' : '#28a745';
+    }
+
+    async function handleSaveKnowledge(): Promise<void> {
+      const title = titleInput.value.trim();
+      const content = contentTextarea.value.trim();
+      
+      if (title.length < 3) {
+        showNotification('Judul minimal 3 karakter', 'warning');
+        return titleInput.focus();
+      }
+      if (content.length < 200) {
+        showNotification('Konten minimal 200 karakter', 'warning');
+        return contentTextarea.focus();
+      }
+
+      const payload = { title, content, userId: currentUserId, email: currentUserEmail, nama_umkm: currentUserUmkmName };
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+      try {
+        const response = await fetch('/api/knowledge-base/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result: ApiResponse<KnowledgeData> = await response.json();
+
+        if (result.success) {
+          showNotification('Knowledge berhasil disimpan!', 'success');
+          clearForm();
+          if (isUserAuthenticated) {
+            loadKnowledgeData();
+          }
+        } else {
+          throw new Error(result.error || 'Gagal menyimpan knowledge');
+        }
+      } catch (error) {
+        console.error('Save knowledge error:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        showNotification(`Gagal menyimpan: ${errorMsg}`, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fas fa-save"></i> Simpan Knowledge';
+      }
+    }
+
+    function clearForm(): void {
+      titleInput.value = '';
+      contentTextarea.value = '';
+      updateCharCounter();
+      titleInput.focus();
+    }
+
+    async function loadKnowledgeData(): Promise<void> {
+      if (!isUserAuthenticated || !currentUserId) return;
+      showLoading(true);
+      try {
+        const params = new URLSearchParams({ page: currentPage.toString(), limit: '10', userId: currentUserId, search: searchTerm });
+        const response = await fetch(`/api/knowledge/list?${params}`);
+        const result = await response.json();
+        if (result.success && result.data) {
+          displayKnowledgeData(result.data);
+          updatePagination(result.pagination);
+          updateStats(result.pagination?.totalDocuments || 0);
+        } else {
+          throw new Error(result.error || 'Gagal memuat data');
+        }
+      } catch (error) {
+        console.error('Load knowledge error:', error);
+        showNotification('Gagal memuat data knowledge', 'error');
+        displayKnowledgeData([]);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // --- UI & DISPLAY FUNCTIONS ---
+    function displayKnowledgeData(data: KnowledgeData[]): void {
+      knowledgeContainer.innerHTML = '';
+      if (data.length === 0) {
+        const message = searchTerm ? 'Tidak ada knowledge yang cocok dengan pencarian Anda.' : 'Anda belum memiliki data. Mulai tambahkan knowledge pertama Anda!';
+        knowledgeContainer.innerHTML = `<div class="empty-state"><p>${message}</p></div>`;
+        return;
+      }
+      data.forEach(item => knowledgeContainer.appendChild(createKnowledgeItem(item)));
+    }
+
+    function createKnowledgeItem(item: KnowledgeData): HTMLElement {
+      const el = document.createElement('div');
+      el.className = 'knowledge-item';
+      el.setAttribute('data-id', item.id);
+      const preview = item.content.length > 150 ? item.content.substring(0, 150) + '...' : item.content;
+      
+      el.innerHTML = `
+        <div class="knowledge-content">
+          <h4 class="knowledge-title">${escapeHtml(item.title)}</h4>
+          <p class="knowledge-preview">${escapeHtml(preview)}</p>
+          <div class="knowledge-meta">
+            <span class="knowledge-date"><i class="fas fa-calendar"></i> ${formatDate(item.createdAt)}</span>
+            <span class="knowledge-chars"><i class="fas fa-font"></i> ${item.content.length} karakter</span>
+          </div>
+        </div>
+        <div class="knowledge-actions">
+          <button class="btn btn-sm btn-danger" onclick="window.deleteKnowledge('${item.id}', '${escapeHtml(item.title)}', '${escapeHtml(item.content)}')">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`;
+      return el;
+    }
+
+    window.deleteKnowledge = function(id: string, title: string, content: string): void {
+      if (!isUserAuthenticated) {
+        showNotification('Anda harus login untuk menghapus data', 'error');
+        return;
+      }
+      pendingDeleteId = id;
+      deleteTitle.textContent = title;
+      deletePreview.textContent = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+      deleteModal.style.display = 'flex';
+    };
+
+    async function handleConfirmDelete(): Promise<void> {
+      if (!pendingDeleteId || !isUserAuthenticated || !currentUserId) return;
+      confirmDelete.disabled = true;
+      confirmDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+      try {
+        const response = await fetch('/api/knowledge/delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: pendingDeleteId, userId: currentUserId })
+        });
+        const result = await response.json();
+        if (result.success) {
+          showNotification('Knowledge berhasil dihapus', 'success');
+          closeDeleteModal();
+          loadKnowledgeData();
+        } else {
+          throw new Error(result.error || 'Gagal menghapus');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        showNotification(`Gagal menghapus: ${errorMsg}`, 'error');
+      } finally {
+        confirmDelete.disabled = false;
+        confirmDelete.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+      }
+    }
+
+    function closeDeleteModal(): void {
+      deleteModal.style.display = 'none';
+      pendingDeleteId = '';
+    }
+
+    // --- HELPER & UTILITY FUNCTIONS ---
+    function updatePagination(p: any): void {
+      if (!p || p.totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+      }
+      pagination.style.display = 'flex';
+      currentPage = p.currentPage;
+      totalPages = p.totalPages;
+      currentPageSpan.textContent = p.currentPage.toString();
+      totalPagesSpan.textContent = p.totalPages.toString();
+      prevBtn.disabled = !p.hasPrevPage;
+      nextBtn.disabled = !p.hasNextPage;
+    }
+
+    function updateStats(total: number): void {
+      totalCount.textContent = total.toString();
+    }
+
+    function showLoading(show: boolean): void {
+      loadingState.style.display = show ? 'flex' : 'none';
+    }
+
+    function formatDate(dateInput: any): string {
+      if (!dateInput) return 'Tidak diketahui';
+      const date = dateInput.seconds ? new Date(dateInput.seconds * 1000) : new Date(dateInput);
+      return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function escapeHtml(text: string): string {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function showNotification(message: string, type: NotificationType = 'info'): void {
+      const notification = document.getElementById('notification');
+      if (!notification) return;
       const iconMap: Record<NotificationType, string> = {
-        success: 'fa-check-circle',
-        error: 'fa-exclamation-circle',
-        warning: 'fa-exclamation-triangle',
-        info: 'fa-info-circle'
+        success: 'fa-check-circle', error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle', info: 'fa-info-circle'
       };
-
-      notification.innerHTML = `
-        <i class="fas ${iconMap[type]}"></i>
-        <span>${message}</span>
-      `;
-      notification.style.display = 'flex';
-      notification.classList.add('show');
-      
-      // Auto hide after 5 seconds
-      setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-          notification.style.display = 'none';
-        }, 300);
-      }, 5000);
+      notification.innerHTML = `<div class="notification-content"><i class="fas ${iconMap[type]}"></i><span>${message}</span></div>`;
+      notification.className = `notification ${type} show`;
+      setTimeout(() => notification.classList.remove('show'), 5000);
     }
-  }
-});
+  });
 </script>
+
+<style>
+/* CSS styles (tidak ada perubahan dari kode asli, dimasukkan agar lengkap) */
+.content-section{margin-bottom:2rem}.card{background:white;border-radius:12px;padding:2rem;box-shadow:0 4px 6px rgba(0,0,0,.1);margin-bottom:2rem}.card-title{display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;color:#333;font-size:1.5rem}.auth-status{text-align:center;padding:2rem;color:#666}.auth-loading{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:1rem}.login-required{text-align:center;padding:3rem 2rem;background:#f8f9fa;border-radius:8px;margin-bottom:2rem}.login-message{color:#666}.login-message i{font-size:3rem;margin-bottom:1rem;color:#dc3545}.login-message h3{margin:0 0 1rem 0;color:#333}.login-message p{margin:0;font-size:1rem}.form-group{margin-bottom:1.5rem}.form-label{display:block;margin-bottom:.5rem;font-weight:600;color:#555}.form-input{width:100%;padding:.75rem;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:1rem;transition:border-color .3s}.form-input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,.25)}.form-textarea{width:100%;min-height:120px;padding:.75rem;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:1rem;resize:vertical;transition:border-color .3s}.form-textarea:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,.25)}.character-counter{text-align:right;font-size:.875rem;color:#666;margin-top:.25rem}.form-actions{display:flex;gap:1rem;margin-bottom:2rem}.btn{background:#007bff;color:white;border:none;padding:.75rem 1.5rem;border-radius:6px;cursor:pointer;font-weight:500;transition:all .3s;display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-size:1rem}.btn:hover{background:#0056b3;transform:translateY(-1px)}.btn:disabled{background:#6c757d;cursor:not-allowed;transform:none}.btn-primary{background:#007bff}.btn-primary:hover{background:#0056b3}.btn-secondary{background:#6c757d}.btn-secondary:hover{background:#5a6268}.btn-danger{background:#dc3545}.btn-danger:hover{background:#c82333}.btn-outline{background:transparent;border:1px solid #007bff;color:#007bff}.btn-outline:hover{background:#007bff;color:white}.btn-sm{padding:.5rem 1rem;font-size:.875rem}.knowledge-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #eee}.knowledge-header h3{margin:0;display:flex;align-items:center;gap:.5rem;color:#333}.knowledge-stats{color:#666;font-size:.875rem}.search-section{margin-bottom:1.5rem}.search-input-container{position:relative}.search-input{width:100%;padding:.75rem 1rem .75rem 2.5rem;border:1px solid #ddd;border-radius:6px;font-size:1rem;transition:border-color .3s}.search-input:focus{outline:none;border-color:#007bff;box-shadow:0 0 0 2px rgba(0,123,255,.25)}.search-icon{position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:#666}.loading-state{display:flex;align-items:center;justify-content:center;gap:.5rem;padding:2rem;color:#666}.knowledge-item{display:flex;justify-content:space-between;align-items:flex-start;padding:1.5rem;border:1px solid #eee;border-radius:8px;margin-bottom:1rem;background:#f8f9fa;transition:all .3s}.knowledge-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}.knowledge-content{flex:1}.knowledge-title{margin:0 0 .5rem 0;color:#333;font-size:1.1rem}.knowledge-preview{margin:0 0 1rem 0;color:#666;line-height:1.5}.knowledge-meta{display:flex;gap:1rem;font-size:.875rem;color:#888}.knowledge-date,.knowledge-chars{display:flex;align-items:center;gap:.25rem}.knowledge-actions{display:flex;gap:.5rem}.empty-state{text-align:center;padding:3rem 2rem;color:#666;background-color:#f8f9fa;border-radius:8px; margin-top: 1rem;}.empty-content i{font-size:3rem;margin-bottom:1rem;opacity:.5}.empty-content h4{margin:0 0 .5rem 0;color:#333}.empty-content p{margin:0;font-size:.875rem}.pagination-container{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1rem;border-top:1px solid #eee}.page-info{color:#666;font-size:.875rem}.notification{position:fixed;top:20px;right:20px;background:black;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15);z-index:1000;max-width:400px;opacity:0;transform:translateX(100%);transition:all .3s ease}.notification.show{opacity:1;transform:translateX(0)}.notification-content{display:flex;align-items:center;gap:.75rem;padding:1rem 1.5rem}.notification.success{border-left:4px solid #28a745}.notification.error{border-left:4px solid #dc3545}.notification.warning{border-left:4px solid #ffc107}.notification.info{border-left:4px solid #17a2b8}.notification .fas{font-size:1.2rem}.notification.success .fas{color:#28a745}.notification.error .fas{color:#dc3545}.notification.warning .fas{color:#ffc107}.notification.info .fas{color:#17a2b8}.modal{display:none;position:fixed;z-index:1000;left:0;top:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);align-items:center;justify-content:center}.modal-content{background:white;border-radius:12px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;box-shadow:0 10px 30px rgba(0,0,0,.3)}.modal-header{display:flex;justify-content:space-between;align-items:center;padding:1.5rem;border-bottom:1px solid #eee}.modal-header h4{margin:0;display:flex;align-items:center;gap:.5rem;color:#333}.close-btn{background:none;border:none;font-size:1.5rem;cursor:pointer;color:#666;padding:0;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .3s}.close-btn:hover{background:#f5f5f5;color:#333}.modal-body{padding:1.5rem}.knowledge-preview strong{display:block;margin-bottom:.5rem;color:#333}.knowledge-preview p{margin:0;color:#666;font-size:.875rem}.modal-actions{display:flex;gap:1rem;justify-content:flex-end;padding:1.5rem;border-top:1px solid #eee}.user-info-section{margin-bottom:2rem;padding:1rem;background:#e9f4ff;border-radius:8px;border-left:4px solid #007bff}.user-info-content{display:flex;flex-direction:column;gap:.5rem}.user-info-item{display:flex;align-items:center;gap:.5rem;font-size:.95rem}.user-info-label{font-weight:600;color:#495057;min-width:100px}.user-info-value{color:#0056b3;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}@media (max-width:768px){.card{padding:1rem}.form-actions{flex-direction:column}.knowledge-header{flex-direction:column;gap:.5rem;align-items:flex-start}.knowledge-item{flex-direction:column;gap:1rem}.knowledge-actions{align-self:flex-end}.pagination-container{flex-direction:column;gap:1rem}.modal-content{width:95%;margin:1rem}.modal-actions{flex-direction:column}.notification{right:10px;left:10px;max-width:none}.user-info-item{flex-direction:column;align-items:flex-start;gap:.25rem}.user-info-label{min-width:unset}}@media (max-width:480px){.card-title{font-size:1.25rem}.btn{padding:.5rem 1rem;font-size:.875rem}.knowledge-meta{flex-direction:column;gap:.5rem}}
+</style>
 
 <style>
 /* Knowledge Base Styles */
@@ -427,6 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
 }
 
 .card-title {
@@ -435,6 +541,50 @@ document.addEventListener("DOMContentLoaded", () => {
   gap: 0.5rem;
   margin-bottom: 1rem;
   color: #333;
+  font-size: 1.5rem;
+}
+
+/* Authentication Styles */
+.auth-status {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+}
+
+.login-required {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.login-message {
+  color: #666;
+}
+
+.login-message i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #dc3545;
+}
+
+.login-message h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.login-message p {
+  margin: 0;
+  font-size: 1rem;
 }
 
 .form-group {
@@ -448,23 +598,20 @@ document.addEventListener("DOMContentLoaded", () => {
   color: #555;
 }
 
-.upload-area {
-  border: 2px dashed #ddd;
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-  cursor: pointer;
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
   transition: border-color 0.3s;
 }
 
-.upload-area:hover {
+.form-input:focus {
+  outline: none;
   border-color: #007bff;
-}
-
-.upload-icon {
-  font-size: 2rem;
-  color: #007bff;
-  margin-bottom: 1rem;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .form-textarea {
@@ -474,7 +621,28 @@ document.addEventListener("DOMContentLoaded", () => {
   border: 1px solid #ddd;
   border-radius: 6px;
   font-family: inherit;
+  font-size: 1rem;
   resize: vertical;
+  transition: border-color 0.3s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.character-counter {
+  text-align: right;
+  font-size: 0.875rem;
+  color: #666;
+  margin-top: 0.25rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .btn {
@@ -485,14 +653,39 @@ document.addEventListener("DOMContentLoaded", () => {
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  text-decoration: none;
+  font-size: 1rem;
 }
 
 .btn:hover {
   background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: #007bff;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+}
+
+.btn-secondary {
+  background: #6c757d;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
 }
 
 .btn-danger {
@@ -503,55 +696,180 @@ document.addEventListener("DOMContentLoaded", () => {
   background: #c82333;
 }
 
-.document-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
-  background: #f8f9fa;
-}
-
-.document-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.document-icon {
-  font-size: 1.5rem;
+.btn-outline {
+  background: transparent;
+  border: 1px solid #007bff;
   color: #007bff;
 }
 
-.document-info h4 {
-  margin: 0 0 0.25rem 0;
+.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.knowledge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.knowledge-header h3 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: #333;
 }
 
-.document-info small {
+.knowledge-stats {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.search-section {
+  margin-bottom: 1.5rem;
+}
+
+.search-input-container {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
   color: #666;
 }
 
-.empty-state {
-  text-align: center;
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 2rem;
   color: #666;
 }
 
+.knowledge-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #f8f9fa;
+  transition: all 0.3s;
+}
+
+.knowledge-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.knowledge-content {
+  flex: 1;
+}
+
+.knowledge-title {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.knowledge-preview {
+  margin: 0 0 1rem 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.knowledge-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #888;
+}
+
+.knowledge-date,
+.knowledge-chars {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.knowledge-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #666;
+}
+
+.empty-content i {
+  font-size:3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-content h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.empty-content p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.page-info {
+  color: #666;
+  font-size: 0.875rem;
+}
+
 /* Notification Styles */
-#notification {
+.notification {
   position: fixed;
   top: 20px;
   right: 20px;
-  background: white;
-  padding: 1rem 1.5rem;
+  background: black;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
   z-index: 1000;
   max-width: 400px;
   opacity: 0;
@@ -559,28 +877,248 @@ document.addEventListener("DOMContentLoaded", () => {
   transition: all 0.3s ease;
 }
 
-#notification.show {
+.notification.show {
   opacity: 1;
   transform: translateX(0);
 }
 
-#notification .fas {
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+}
+
+.notification.success {
+  border-left: 4px solid #28a745;
+}
+
+.notification.error {
+  border-left: 4px solid #dc3545;
+}
+
+.notification.warning {
+  border-left: 4px solid #ffc107;
+}
+
+.notification.info {
+  border-left: 4px solid #17a2b8;
+}
+
+.notification .fas {
   font-size: 1.2rem;
 }
 
-#notification .fa-check-circle {
+.notification.success .fas {
   color: #28a745;
 }
 
-#notification .fa-exclamation-circle {
+.notification.error .fas {
   color: #dc3545;
 }
 
-#notification .fa-exclamation-triangle {
+.notification.warning .fas {
   color: #ffc107;
 }
 
-#notification .fa-info-circle {
+.notification.info .fas {
   color: #17a2b8;
 }
-</style>
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h4 {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.knowledge-preview {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+}
+
+.knowledge-preview strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.knowledge-preview p {
+  margin: 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .knowledge-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .knowledge-item {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .knowledge-actions {
+    align-self: flex-end;
+  }
+  
+  .pagination-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .notification {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-title {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .knowledge-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.user-info-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.user-info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.user-info-label {
+  font-weight: 600;
+  color: #495057;
+  min-width: 100px;
+}
+
+.user-info-value {
+  color: #6c757d;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+@media (max-width: 768px) {
+  .user-info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .user-info-label {
+    min-width: unset;
+  }
+}
