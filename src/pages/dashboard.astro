@@ -115,59 +115,59 @@ import Knowledgebase from "src/components/scripts/knowledgebase.astro";
               Anda berhasil masuk ke dashboard TukangCS
             </p>
 
-            <div class="user-info">
-              <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
-              <p><strong>Email:</strong> <span id="user-email">-</span></p>
-              <p><strong>Nama UMKM:</strong> <span id="user-nama">-</span></p>
-              <p><strong>Sektor:</strong> <span id="user-sektor">-</span></p>
-              <p>
-                <strong>Platform Sosmed:</strong>
-                <span id="user-sosmed">-</span>
-              </p>
-              <p>
-                <strong>Bergabung:</strong>
-                <span id="user-bergabung">-</span>
-              </p>
-            </div>
-          </div>
-          <div class="card">
-            <h2 class="card-title">
-              <i class="fas fa-chart-bar"></i> Ringkasan Aktivitas
-            </h2>
-            <div class="sentiment-stats">
-              <div class="stat-card">
-                <div class="stat-number stat-positive" id="stat-pesan-masuk">
-                  0
+                <div class="user-info">
+                  <h3><i class="fas fa-user-circle"></i> Informasi Profil</h3>
+                  <p><strong>Email:</strong> <span id="user-email">-</span></p>
+                  <p><strong>Nama UMKM:</strong> <span id="user-nama">-</span></p>
+                  <p><strong>Sektor:</strong> <span id="user-sektor">-</span></p>
+                  <p>
+                    <strong>Platform Sosmed:</strong>
+                    <span id="user-sosmed">-</span>
+                  </p>
+                  <p>
+                    <strong>Bergabung:</strong>
+                    <span id="user-bergabung">-</span>
+                  </p>
                 </div>
-                <div>Pesan Masuk Hari Ini</div>
               </div>
-              <div class="stat-card">
-                <div class="stat-number stat-neutral" id="stat-respon-otomatis">
-                  0
+              <div class="card">
+                <h2 class="card-title">
+                  <i class="fas fa-chart-bar"></i> Ringkasan Aktivitas
+                </h2>
+                <div class="sentiment-stats">
+                  <div class="stat-card">
+                    <div class="stat-number stat-positive" id="stat-pesan-masuk">
+                      0
+                    </div>
+                    <div>Pesan Masuk Hari Ini</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-number stat-neutral" id="stat-respon-otomatis">
+                      0
+                    </div>
+                    <div>Respon Otomatis</div>
+                  </div>
+                  <div class="stat-card">
+                    <div
+                      class="stat-number stat-negative"
+                      id="stat-perlu-perhatian"
+                    >
+                      0
+                    </div>
+                    <div>Perlu Perhatian</div>
+                  </div>
                 </div>
-                <div>Respon Otomatis</div>
-              </div>
-              <div class="stat-card">
-                <div
-                  class="stat-number stat-negative"
-                  id="stat-perlu-perhatian"
-                >
-                  0
+                <div style="margin-top: 2rem;">
+                  <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
+                  <div
+                    id="aktivitas-terbaru"
+                    style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;"
+                  >
+                    <!-- Diisi via JS -->
+                  </div>
                 </div>
-                <div>Perlu Perhatian</div>
               </div>
             </div>
-            <div style="margin-top: 2rem;">
-              <h3 style="margin-bottom: 1rem;">Aktivitas Terbaru</h3>
-              <div
-                id="aktivitas-terbaru"
-                style="background: #f8f9fa; border-radius: 8px; padding: 1.5rem;"
-              >
-                <!-- Diisi via JS -->
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Social Media Management Section -->
         <div id="social-media" class="content-section">
@@ -540,6 +540,14 @@ import Knowledgebase from "src/components/scripts/knowledgebase.astro";
 
       // --- MEMBUAT FUNGSI AGAR BISA DIAKSES DARI HTML (`onclick`) ---
       // Ini adalah bagian penting untuk mengatasi error "is not defined"
+      declare global {
+        interface Window {
+          toggleSidebar: typeof toggleSidebar;
+          closeSidebar: typeof closeSidebar;
+          showSection: typeof showSection;
+          logout: typeof logout;
+        }
+      }
       window.toggleSidebar = toggleSidebar;
       window.closeSidebar = closeSidebar;
       window.showSection = showSection;

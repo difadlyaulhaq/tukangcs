@@ -114,7 +114,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       path: "/",
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: "lax", // // Lebih fleksibel dari strict
       maxAge: fiveDays / 1000,
     });
 

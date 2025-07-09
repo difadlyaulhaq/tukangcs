@@ -62,9 +62,15 @@
       const data = await res.json();
       console.log('Login response:', data);
       if (res.ok && data.success) {
-        // Store session data in localStorage for client-side access
+// Store session data in localStorage for client-side access
         localStorage.setItem('firebase_session', JSON.stringify(data.session));
         localStorage.setItem('firebase_user', JSON.stringify(data.user));
+        
+        showMessage('login-message', 'Login berhasil, mengalihkan...', 'success');
+        // Paksa reload agar cookie session terbaca oleh browser
+        window.location.href = '/dashboard';
+        // Atau jika ingin reload halaman saat ini:
+        // window.location.reload();
         
         showMessage('login-message', 'Login berhasil, mengalihkan...', 'success');
         setTimeout(() => {
